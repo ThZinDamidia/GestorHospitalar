@@ -1,0 +1,2 @@
+# GestorHospitalar
+GestorHospitalar.Beta
