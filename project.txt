@@ -1,0 +1,60 @@
+GESTOR DE HOSPITAIS
+Introdução -  a minha gestão;
+Então para a fase zero vou escolher duas entidades o médico e o paciente que vão se relacionar dessa forma 
+um médico pode ter vários pacientes e vários pacientes pode ter vários médico não é obrigado pode ter depende do caso e da situação em ambos
+Paciente e Médicos e uma relação para N e N que com isso vai gerar uma nova entidade consulta que 1 médico pode ter várias consultas e 1 paciente só pode ter uma consulta
+
+
+CONCEITO CRUD NO MEU TRABALHO
+
+Paciente - Vamos poder adicionar, ver, atualizar o paciente e apagar ele bds 
+
+Médico - Da mesmo forma que o paciente vamos fazer com os médicos na fase 0 
+
+
+ESTRUTURA DE DADOS QUE VOU USAR PARA ESSAS ENTIDADES
+
+Médico e Paciente - em Ambos os dois vou usar o set para manter exclusividade no nomes e não repetir nomes
+
+CARACTERISTICAS DO MEDICO
+
+DADOS BASICOS
+Nome:
+N_DO_MEDICO:
+Idade:
+Data de nascimento:
+Nacionalidade:
+FORMAÇÃO E ATUAÇÃO
+Area de especialidade:
+Data de registo:
+PERFIL PROFISSIONAL
+Idiomas:
+P. forte:
+P. Fraco: 
+
+VINCULO E LOGISTICA
+ ID  de Unidade de saúde
+Horário turno:
+Cargo:
+CARACTERISTICAS DO PACIENTE
+
+DADOS BÁSICOS
+Nome:
+NIF:
+DT de nascimento:
+Nacionalidade:
+Tipo Sanguíneo:
+HISTÓRICO MEDICO:
+Alergias:
+Doenças cronicas:
+Cirurgias anteriores:
+Lista de IDs de Medicamentos habitual:
+CARACTERISTICA CONSULTA;
+
+ID_DA_CONSULTA:
+ID_DO_MEDICO;
+NIF_DO_PACIENTE;
+
+
+
+
