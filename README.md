@@ -1,64 +1,60 @@
-# GestorHospitalar
-GestorHospitalar.Beta
-📊 Sistema de Gestão Hospitalar - Fase 0
+🏥 Sistema de Gestão Hospitalar (Python)
 
-Este projeto consiste em um sistema de gerenciamento hospitalar desenvolvido em Python, focado na estruturação de dados e relações entre Médicos e Pacientes. O sistema utiliza estruturas de dados dinâmicas para simular um ambiente de persistência em memória.
-🏗️ Estrutura Hierárquica do Sistema
-
-O sistema foi desenhado seguindo uma hierarquia clara de entidades:
-
-    Nível de Dados (Dicionários):
-
-        medicos: Armazena objetos médicos usando ID_MEDICO como chave primária.
-
-        paciente: Armazena registros de pacientes utilizando o NIF como identificador único.
-
-    Nível de Lógica (CRUD): Funções independentes para cada operação (Criar, Ler, Atualizar, Deletar).
-
-    Nível de Relacionamento: Vinculação de pacientes a médicos através de IDs referenciados.
-
-🛠️ Funcionalidades Implementadas
+Este é um sistema de linha de comando (CLI) desenvolvido em Python para a gestão de registros de Médicos e Pacientes. O projeto simula o comportamento de um servidor real, utilizando mensagens de log baseadas em Status Codes HTTP.
+🚀 Funcionalidades
 👨‍⚕️ Gestão de Médicos
 
-    Adição com Validação: O sistema impede a duplicação de IDs e o uso do ID 0.
+    Cadastro: Geração automática de ID e validação de dados (Nome, Especialidade, Data).
 
-    Perfil Detalhado: Registro de dados básicos, formação, perfil profissional (idiomas, pontos fortes/fracos) e logística (turno/cargo).
+    Consulta: Busca detalhada por ID.
 
-    Consulta Dinâmica: Interface que itera sobre as chaves do dicionário para exibir informações formatadas.
+    Listagem: Visualização rápida de todos os médicos registrados.
 
-🤒 Gestão de Pacientes
+    Atualização: Edição dinâmica de qualquer campo do registro.
 
-    Histórico Médico: Registro de alergias, doenças crônicas e cirurgias anteriores.
+    Remoção: Exclusão segura de registros do sistema.
 
-    Vínculo Direto: Campo para associar o paciente ao ID de um médico atual.
+👤 Gestão de Pacientes
 
-⚙️ Diferenciais Técnicos
+    Cadastro: Geração automática de NIF válido (algoritmo oficial) e vínculo com ID médico.
 
-    Tratamento de Erros: Uso de blocos try-except (ValueError) para garantir que entradas de texto não quebrem o sistema em campos numéricos.
+    Consulta: Busca detalhada por NIF.
 
-    Interface Amigável: Uso do método .title() para nomes e .replace("_", " ").capitalize() para exibir campos de forma legível ao usuário.
+    Histórico: Registro de alergias, doenças crônicas e cirurgias.
 
-💻 Exemplo de Estrutura de Dados (JSON-like)
-Python
+    Atualização e Remoção: Gestão completa dos dados do paciente.
 
-{
-    "ID_MEDICO": {
-        "nome": "Dr. Silva",
-        "especialidade": "Cardiologia",
-        "vinculo": "Unidade 101"
-    }
-}
+🛠️ Tecnologias Utilizadas
 
-🚀 Próximos Passos (Fase 1)
+    Python 3.x
 
-    [ ] Implementar a entidade Consulta para formalizar a relação N:N.
+    Módulos Nativos: random, datetime
 
-    [ ] Substituir o armazenamento em memória por um banco de dados SQLite.
+    Simulação de API: Sistema de logs com status 200, 201, 400 e 404.
 
-    [ ] Adicionar interface gráfica ou Web (Flask/FastAPI).
+📁 Estrutura do Projeto
+Plaintext
 
-📝 Notas de Versão
+├── main.py          # Ponto de entrada do programa (Menus)
+├── medico.py        # Lógica e dicionários de médicos
+├── paciente.py      # Lógica e dicionários de pacientes
+└── ultils.py        # Funções utilitárias (Geradores de ID/NIF e Logs)
 
-    Nota: Atualmente, o sistema utiliza dicionários globais para simular a base de dados. A unicidade é garantida pela verificação manual de chaves antes da inserção.
 
-Dica Profissional: Notei um pequeno erro no seu código na função adicionar_paciente: você usou paciente[paciente] = {...}. O correto seria usar o identificador, como paciente[nif] = {...}.
+💻 Exemplos de Logs (Simulação HTTP)
+
+O sistema comunica-se com o utilizador através de respostas padronizadas:
+
+    [HTTP 201] : Criado com sucesso - Quando um novo registro é salvo.
+
+    [HTTP 200] : OK - Quando uma consulta ou atualização é bem-sucedida.
+
+    [HTTP 404] : Not Found - Quando um ID ou NIF não existe na base de dados.
+
+    [HTTP 400] : Bad Request - Quando há erro de digitação ou dados inválidos.
+
+📝 Notas de Implementação
+
+    Validação de Dados: O sistema utiliza loops de repetição para garantir que campos críticos (como datas e números) sejam preenchidos corretamente sem interromper o programa.
+
+    Persistência: Os dados são armazenados em dicionários em memória durante a execução da sessão.
