@@ -1,85 +1,73 @@
+from medico import adicionar_medico, listar_nomes__dos_medicos, consultar_medicos, atualizar_medico, deletar_medico
+from paciente import adicionar_paciente, listar_pacientes, consultar_paciente, atualizar_paciente, deletar_paciente
 
-from medico import adicionar_medico
-from medico import listar_nomes__dos_medicos
-from medico import consultar_medicos
-from medico import atualizar_medico
-from paciente import adicionar_paciente
-from medico import deletar_medico
-from paciente import listar_pacientes
-from paciente import consultar_paciente
-from paciente import atualizar_paciente
-from paciente import deletar_paciente
+
+def menu_paciente():
+    """Sub-menu dedicado apenas aos pacientes"""
+    while True:
+        try:
+            print("\n--- MENU DO PACIENTE ---")
+            print("1 - Adicionar Paciente")
+            print("2 - Listar Pacientes")
+            print("3 - Consultar Paciente")
+            print("4 - Atualizar Paciente")
+            print("5 - Deletar Paciente")
+            print("6 - Voltar ao Menu Principal")
+
+            escolha = int(input("\nEscolha uma opção: "))
+
+            if escolha == 1:
+                adicionar_paciente()
+            elif escolha == 2:
+                listar_pacientes()
+            elif escolha == 3:
+                consultar_paciente()
+            elif escolha == 4:
+                atualizar_paciente()
+            elif escolha == 5:
+                deletar_paciente()
+            elif escolha == 6:
+                break  # Sai do loop do paciente e volta pro main
+            else:
+                print("Opção inválida!")
+        except ValueError:
+            print("Erro: Digite apenas números.")
 
 
 def main():
     while True:
         try:
-            print("1 - Deletar Medico")
-            print("2 - Adicionar medico")
-            print("3 - Listar Medicos")
-            print("4 -Consultar medicos")
-            print("5 - Atualizar medicos")
-            print("6 - Entra menu do paciente")
+            print("\n=== SISTEMA DE GESTÃO HOSPITALAR ===")
+            print("1 - Adicionar Médico")
+            print("2 - Listar Médicos")
+            print("3 - Consultar Médico")
+            print("4 - Atualizar Médico")
+            print("5 - Deletar Médico")
+            print("6 - Menu do Paciente >")
             print("7 - Sair")
 
-
-            escolha_menu_medico = int(input("Escolha uma das opções acima: "))
+            escolha_menu_medico = int(input("\nEscolha uma opção: "))
 
             if escolha_menu_medico == 1:
-                deletar_medico()
-
-            elif escolha_menu_medico == 2:
                 adicionar_medico()
-
-            elif escolha_menu_medico == 3:
+            elif escolha_menu_medico == 2:
                 listar_nomes__dos_medicos()
-
-            elif escolha_menu_medico == 4:
+            elif escolha_menu_medico == 3:
                 consultar_medicos()
-
-            elif escolha_menu_medico == 5:
+            elif escolha_menu_medico == 4:
                 atualizar_medico()
-
+            elif escolha_menu_medico == 5:
+                deletar_medico()
             elif escolha_menu_medico == 6:
-                print("---Menu do paciente---")
-                print("1 - Adicionar Paciente")
-                print("2 - Listar Pacientes")
-                print("3 -Consultar Paciente")
-                print("4 - Atualizar Paciente")
-                print("5 - Deletar Paciente")
-                print("6 - Sair")
-                escolha_menu_paciente = int(input("Escolha uma das opções acima: "))
-                if escolha_menu_paciente ==  1:
-                    adicionar_paciente()
-
-                elif escolha_menu_paciente == 2:
-                    listar_pacientes()
-                elif escolha_menu_paciente == 3:
-                    consultar_paciente()
-                elif escolha_menu_paciente == 4:
-                    atualizar_paciente()
-                elif escolha_menu_paciente == 5:
-                    deletar_paciente()
-                elif escolha_menu_paciente == 6:
-                    break
-
-
-
-
-
-
+                menu_paciente()  # Chama a função do sub-menu
             elif escolha_menu_medico == 7:
-                print("Sair")
-
+                print("Encerrando o sistema... Até logo!")
+                break
             else:
-                print("opção invalida")
+                print("Opção inválida!")
         except ValueError:
-            print("Erro esolha apenas umas das opções")
-
-
-
-
+            print("Erro: Escolha apenas os números das opções acima.")
 
 
 if __name__ == "__main__":
-        main()
+    main()
