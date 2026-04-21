@@ -1,60 +1,64 @@
-GESTOR DE HOSPITAIS
-Introdução -  a minha gestão;
-Então para a fase zero vou escolher duas entidades o médico e o paciente que vão se relacionar dessa forma 
-um médico pode ter vários pacientes e vários pacientes pode ter vários médico não é obrigado pode ter depende do caso e da situação em ambos
-Paciente e Médicos e uma relação para N e N que com isso vai gerar uma nova entidade consulta que 1 médico pode ter várias consultas e 1 paciente só pode ter uma consulta
+📖 Documentação de Estrutura e Lógica — HMS
+Esta documentação detalha as escolhas técnicas, estruturas de dados e a lógica de negócio implementada na Fase 0 do Sistema de Gestão Hospitalar.
 
+1. Arquitetura de Dados
+O sistema utiliza uma abordagem de Persistência em Memória (In-memory storage). Os dados são estruturados em dicionários aninhados para garantir performance e integridade.
 
-CONCEITO CRUD NO MEU TRABALHO
+🗂️ Estruturas Utilizadas
+Dicionários (dict): Utilizados como base de dados principal (_medicos e _pacientes).
 
-Paciente - Vamos poder adicionar, ver, atualizar o paciente e apagar ele bds 
+Porquê? A busca por Chave-Valor permite acesso de tempo constante O(1). Ao pesquisar por um ID Médico ou NIF de Paciente, o sistema não precisa percorrer uma lista, indo diretamente ao endereço de memória do registo.
 
-Médico - Da mesmo forma que o paciente vamos fazer com os médicos na fase 0 
+Sets (Conjuntos): Embora o armazenamento final seja em dicionários, a lógica de exclusividade em nomes e campos críticos é validada para evitar redundância, mantendo a integridade dos dados.
 
+2. Modelagem das Entidades (Fase 0)
+🩺 Entidade: Médico
+Representa o corpo clínico. A sua chave primária é um ID Único gerado sequencialmente.
 
-ESTRUTURA DE DADOS QUE VOU USAR PARA ESSAS ENTIDADES
+Dados Base: Nome, Data de Nascimento, Nacionalidade.
 
-Médico e Paciente - em Ambos os dois vou usar o set para manter exclusividade no nomes e não repetir nomes
+Dados Profissionais: Especialidade, Data de Registo, Cargo e Horário.
 
-CARACTERISTICAS DO MEDICO
+Análise Qualitativa: Inclusão de campos de "Ponto Forte" e "Ponto Fraco" para facilitar a gestão de equipas e alocação em turnos críticos.
 
-DADOS BASICOS
-Nome:
-N_DO_MEDICO:
-Idade:
-Data de nascimento:
-Nacionalidade:
-FORMAÇÃO E ATUAÇÃO
-Area de especialidade:
-Data de registo:
-PERFIL PROFISSIONAL
-Idiomas:
-P. forte:
-P. Fraco: 
+👤 Entidade: Paciente
+Representa o utente. A sua chave primária é o NIF, gerado internamente.
 
-VINCULO E LOGISTICA
- ID  de Unidade de saúde
-Horário turno:
-Cargo:
-CARACTERISTICAS DO PACIENTE
+Histórico Clínico: Tipagem sanguínea, alergias, doenças crónicas e cirurgias anteriores.
 
-DADOS BÁSICOS
-Nome:
-NIF:
-DT de nascimento:
-Nacionalidade:
-Tipo Sanguíneo:
-HISTÓRICO MEDICO:
-Alergias:
-Doenças cronicas:
-Cirurgias anteriores:
-Lista de IDs de Medicamentos habitual:
-CARACTERISTICA CONSULTA;
+Vínculo Sistémico: Cada paciente possui um campo id_medico, criando uma relação direta com a entidade Médico.
 
-ID_DA_CONSULTA:
-ID_DO_MEDICO;
-NIF_DO_PACIENTE;
+3. Lógica de Negócio e Algoritmos
+🛡️ Validação de Integridade Referencial
+O sistema impede a criação de "pacientes órfãos". Antes de concluir o registo de um paciente, a função medico_existe() verifica se o ID do médico responsável está ativo na base de dados de médicos.
 
+🔢 Algoritmo de Geração de NIF
+Diferente de um gerador aleatório simples, o sistema utiliza o Cálculo do Dígito de Controlo (Módulo 11):
 
+Gera 8 dígitos aleatórios começando por 1 ou 2.
 
+Calcula a soma ponderada desses dígitos.
 
+Determina o dígito verificador para garantir que o NIF é matematicamente válido segundo o padrão oficial.
+
+📅 Validação Cronológica
+Utilização do módulo datetime para assegurar que:
+
+Datas de nascimento e registo seguem o formato ISO (YYYY-MM-DD).
+
+Entradas de texto inválidas em campos de data não causem o encerramento do programa (Exception Handling).
+
+4. Evolução do Relacionamento (Roadmap)
+Atualmente, o relacionamento é de 1 para N (Um médico é responsável por vários pacientes).
+
+Próxima Implementação: Introdução da entidade CONSULTA.
+Esta nova estrutura transformará a lógica atual numa relação N para N, permitindo que um paciente seja atendido por múltiplos especialistas e que cada interação gere um registo histórico único (ID_CONSULTA).
+
+5. Simulação de Camada de Rede (Logs)
+Para preparar o código para uma futura migração para Web/API, foi implementada a função log_servidor. Ela intercepta cada operação de escrita/leitura e emite um reporte formatado:
+
+Erro 400: Quando o utilizador falha na lógica de input (ex: ID da unidade não é um número).
+
+Erro 404: Quando o identificador solicitado não consta na memória.
+
+Sucesso 200/201: Confirmação de persistência ou recuperação de dados.
