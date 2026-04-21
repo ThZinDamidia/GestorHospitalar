@@ -1,4 +1,4 @@
-from utils import gerar_id_medico, validar_data, log_servidor
+from ultils import gerar_id_medico, validar_data, log_servidor
 
 _medicos = {}
 
