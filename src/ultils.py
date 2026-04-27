@@ -3,13 +3,11 @@ import random
 
 _contador_ids = 1
 
-
 def gerar_id_medico():
     global _contador_ids
     novo_id = f"M{_contador_ids:03d}"
     _contador_ids += 1
     return novo_id
-
 
 def gerar_nif_valido():
     while True:
@@ -21,14 +19,14 @@ def gerar_nif_valido():
             nif_lista.append(digito_controlo)
             return int("".join(map(str, nif_lista)))
 
-
 def validar_data(data_texto):
+    if not data_texto:
+        return False
     try:
         datetime.strptime(data_texto, "%Y-%m-%d")
         return True
     except ValueError:
         return False
-
 
 def log_servidor(status, mensagem):
     print(f"\n[HTTP {status}] : {mensagem}")
