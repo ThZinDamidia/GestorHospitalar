@@ -1,75 +1,91 @@
 # ==============================
-# paciente.py
-# CRUD de Pacientes com integridade referencial
+# medico.py
+# CRUD de Médicos com integridade referencial
 # ==============================
 
 from utils import (
-    gerar_id_paciente, gerar_nif_valido,
-    validar_nome, validar_data, validar_tipo_sanguineo,
+    gerar_id_medico,
+    validar_nome, validar_data, validar_data_passada,
     normalizar_nome, log_servidor,
 )
-from medico import medico_existe
+from departamento import (
+    departamento_existe,
+    obter_especialidades_departamento,
+    _alocar_medico,
+    _desalocar_medico,
+)
 
-_pacientes: dict = {}
+_medicos: dict = {}
 
-# Conjunto de NIFs já usados (para garantir unicidade entre sessões)
-_nifs_usados: set = set()
+CARGOS_VALIDOS = {
+    "Médico Residente", "Médico Especialista", "Médico Chefe",
+    "Diretor de Departamento", "Médico Consultor",
+}
 
 
 # ─── HELPERS PÚBLICOS ────────────────────────
 
-def paciente_existe(id_pac: str) -> bool:
-    return id_pac in _pacientes
+def medico_existe(id_med: str) -> bool:
+    return id_med in _medicos
 
 
-def obter_medico_paciente(id_pac: str) -> str | None:
-    if id_pac not in _pacientes:
+def obter_especialidade_medico(id_med: str) -> str | None:
+    if id_med not in _medicos:
         return None
-    return _pacientes[id_pac]["id_medico"]
+    return _medicos[id_med]["especialidade"]
 
 
-def paciente_tem_internamento_ativo(id_pac: str) -> bool:
-    """Verificado por internamento.py para conflitos de agendamento."""
+def obter_departamento_medico(id_med: str) -> str | None:
+    if id_med not in _medicos:
+        return None
+    return _medicos[id_med]["id_departamento"]
+
+
+def medico_tem_consultas_ativas(id_med: str) -> bool:
+    """Verificado por consulta.py para integridade referencial."""
+    from consulta import _consultas
+    return any(
+        c["medico_id"] == id_med and c["status"] == "Agendada"
+        for c in _consultas.values()
+    )
+
+
+def medico_tem_internamentos_ativos(id_med: str) -> bool:
+    """Verificado por internamento.py para integridade referencial."""
     from internamento import _internamentos
     return any(
-        i["paciente_id"] == id_pac and i["status"] == "Ativo"
+        i["medico_id"] == id_med and i["status"] == "Ativo"
         for i in _internamentos.values()
     )
 
 
-# ─── GERAR NIF ÚNICO ─────────────────────────
-
-def _gerar_nif_unico() -> int:
-    tentativas = 0
-    while tentativas < 1000:
-        nif = gerar_nif_valido()
-        if nif not in _nifs_usados:
-            _nifs_usados.add(nif)
-            return nif
-        tentativas += 1
-    raise RuntimeError("Não foi possível gerar um NIF único após 1000 tentativas.")
-
-
 # ─── CRIAR ────────────────────────────────────
 
-def criar_paciente(nome: str, data_nascimento: str, nacionalidade: str,
-                   tipo_sanguineo: str, alergias: str, doencas_cronicas: str,
-                   cirurgias_anteriores: str, id_medico: str) -> tuple:
+def criar_medico(nome: str, data_nascimento: str, nacionalidade: str,
+                 especialidade: str, data_registo: str, idiomas: str,
+                 ponto_forte: str, ponto_fraco: str,
+                 id_departamento: str, horario_turno: str, cargo: str) -> tuple:
     """
-    Cria um paciente e associa-o a um médico responsável.
+    Cria um médico e aloca-o ao departamento indicado.
 
     Regras de negócio:
-      - O médico responsável deve existir.
-      - O tipo sanguíneo deve ser um valor reconhecido.
-      - NIF gerado automaticamente e único.
+      - O departamento deve existir.
+      - A especialidade do médico deve constar nas especialidades do departamento.
+      - O cargo deve ser um dos valores permitidos.
     """
+    # — Validações básicas —
     ok, erro = validar_nome(nome)
     if not ok:
         log_servidor(400, erro)
         return 400, erro
 
-    if not validar_data(data_nascimento):
-        msg = "Data de nascimento inválida. Use YYYY-MM-DD."
+    if not validar_data_passada(data_nascimento):
+        msg = "Data de nascimento inválida ou no futuro. Use YYYY-MM-DD."
+        log_servidor(400, msg)
+        return 400, msg
+
+    if not validar_data_passada(data_registo):
+        msg = "Data de registo inválida ou no futuro. Use YYYY-MM-DD."
         log_servidor(400, msg)
         return 400, msg
 
@@ -78,138 +94,190 @@ def criar_paciente(nome: str, data_nascimento: str, nacionalidade: str,
         log_servidor(400, msg)
         return 400, msg
 
-    if not tipo_sanguineo or not validar_tipo_sanguineo(tipo_sanguineo):
-        msg = "Tipo sanguíneo inválido. Valores aceites: A+, A-, B+, B-, AB+, AB-, O+, O-."
+    if not especialidade or not especialidade.strip():
+        msg = "Especialidade é obrigatória."
         log_servidor(400, msg)
         return 400, msg
 
-    if not id_medico or not id_medico.strip():
-        msg = "ID do médico responsável é obrigatório."
+    if not horario_turno or not horario_turno.strip():
+        msg = "Horário do turno é obrigatório."
         log_servidor(400, msg)
         return 400, msg
 
-    if not medico_existe(id_medico.strip()):
-        msg = f"Médico '{id_medico}' não encontrado. Registe o médico primeiro."
+    cargo_norm = cargo.strip().title() if cargo else ""
+    if cargo_norm not in CARGOS_VALIDOS:
+        msg = f"Cargo inválido. Valores permitidos: {', '.join(sorted(CARGOS_VALIDOS))}."
+        log_servidor(400, msg)
+        return 400, msg
+
+    # — Validações relacionais —
+    if not departamento_existe(id_departamento):
+        msg = f"Departamento '{id_departamento}' não encontrado. Crie o departamento primeiro."
         log_servidor(404, msg)
         return 404, msg
 
-    id_pac = gerar_id_paciente()
-    nif = _gerar_nif_unico()
+    especialidade_norm = especialidade.strip().title()
+    especialidades_dep = obter_especialidades_departamento(id_departamento)
+    if especialidade_norm not in especialidades_dep:
+        msg = (f"A especialidade '{especialidade_norm}' não pertence ao departamento "
+               f"'{id_departamento}' (especialidades: {', '.join(especialidades_dep)}).")
+        log_servidor(400, msg)
+        return 400, msg
 
-    _pacientes[id_pac] = {
-        "id": id_pac,
-        "nif": nif,
+    # — Criação —
+    id_med = gerar_id_medico()
+    _medicos[id_med] = {
+        "id": id_med,
         "nome": normalizar_nome(nome),
         "data_nascimento": data_nascimento,
         "nacionalidade": nacionalidade.strip().title(),
-        "tipo_sanguineo": tipo_sanguineo.strip().upper(),
-        "alergias": alergias.strip() if alergias else "Nenhuma",
-        "doencas_cronicas": doencas_cronicas.strip() if doencas_cronicas else "Nenhuma",
-        "cirurgias_anteriores": cirurgias_anteriores.strip() if cirurgias_anteriores else "Nenhuma",
-        "id_medico": id_medico.strip(),
+        "especialidade": especialidade_norm,
+        "data_registo": data_registo,
+        "idiomas": idiomas.strip() if idiomas else "",
+        "ponto_forte": ponto_forte.strip() if ponto_forte else "",
+        "ponto_fraco": ponto_fraco.strip() if ponto_fraco else "",
+        "id_departamento": id_departamento,
+        "horario_turno": horario_turno.strip(),
+        "cargo": cargo_norm,
+        "ativo": True,
         "criado_em": _agora(),
         "atualizado_em": _agora(),
     }
 
-    log_servidor(201, f"Paciente '{normalizar_nome(nome)}' criado. ID: {id_pac} | NIF: {nif}")
-    return 201, dict(_pacientes[id_pac])
+    _alocar_medico(id_departamento, id_med)
+    log_servidor(201, f"Médico '{normalizar_nome(nome)}' criado. ID: {id_med}")
+    return 201, dict(_medicos[id_med])
 
 
 # ─── LISTAR ───────────────────────────────────
 
-def listar_pacientes() -> tuple:
-    if not _pacientes:
-        log_servidor(404, "Nenhum paciente registado.")
-        return 404, "Nenhum paciente registado."
-    log_servidor(200, "Lista de pacientes recuperada.")
-    return 200, {k: dict(v) for k, v in _pacientes.items()}
+def listar_medicos() -> tuple:
+    if not _medicos:
+        log_servidor(404, "Nenhum médico registado.")
+        return 404, "Nenhum médico registado."
+    log_servidor(200, "Lista de médicos recuperada.")
+    return 200, {k: dict(v) for k, v in _medicos.items()}
 
 
 # ─── CONSULTAR ────────────────────────────────
 
-def consultar_paciente(id_pac: str) -> tuple:
-    if id_pac not in _pacientes:
-        msg = f"Paciente '{id_pac}' não encontrado."
+def consultar_medico(id_med: str) -> tuple:
+    if id_med not in _medicos:
+        msg = f"Médico '{id_med}' não encontrado."
         log_servidor(404, msg)
         return 404, msg
-    log_servidor(200, f"Paciente '{id_pac}' consultado.")
-    return 200, dict(_pacientes[id_pac])
+    log_servidor(200, f"Médico '{id_med}' consultado.")
+    return 200, dict(_medicos[id_med])
 
 
 # ─── ATUALIZAR ────────────────────────────────
 
-def atualizar_paciente(id_pac: str, nome: str = None, data_nascimento: str = None,
-                       nacionalidade: str = None, tipo_sanguineo: str = None,
-                       alergias: str = None, doencas_cronicas: str = None,
-                       cirurgias_anteriores: str = None, id_medico: str = None) -> tuple:
-    if id_pac not in _pacientes:
-        msg = f"Paciente '{id_pac}' não encontrado."
+def atualizar_medico(id_med: str, nome: str = None, data_nascimento: str = None,
+                     nacionalidade: str = None, especialidade: str = None,
+                     data_registo: str = None, idiomas: str = None,
+                     ponto_forte: str = None, ponto_fraco: str = None,
+                     id_departamento: str = None, horario_turno: str = None,
+                     cargo: str = None) -> tuple:
+    if id_med not in _medicos:
+        msg = f"Médico '{id_med}' não encontrado."
         log_servidor(404, msg)
         return 404, msg
 
-    pac = _pacientes[id_pac]
+    med = _medicos[id_med]
 
     if nome is not None:
         ok, erro = validar_nome(nome)
         if not ok:
             log_servidor(400, erro)
             return 400, erro
-        pac["nome"] = normalizar_nome(nome)
+        med["nome"] = normalizar_nome(nome)
 
     if data_nascimento is not None:
-        if not validar_data(data_nascimento):
-            msg = "Data de nascimento inválida. Use YYYY-MM-DD."
+        if not validar_data_passada(data_nascimento):
+            msg = "Data de nascimento inválida ou no futuro."
             log_servidor(400, msg)
             return 400, msg
-        pac["data_nascimento"] = data_nascimento
+        med["data_nascimento"] = data_nascimento
+
+    if data_registo is not None:
+        if not validar_data_passada(data_registo):
+            msg = "Data de registo inválida ou no futuro."
+            log_servidor(400, msg)
+            return 400, msg
+        med["data_registo"] = data_registo
 
     if nacionalidade is not None:
-        pac["nacionalidade"] = nacionalidade.strip().title()
+        med["nacionalidade"] = nacionalidade.strip().title()
 
-    if tipo_sanguineo is not None:
-        if not validar_tipo_sanguineo(tipo_sanguineo):
-            msg = "Tipo sanguíneo inválido."
-            log_servidor(400, msg)
-            return 400, msg
-        pac["tipo_sanguineo"] = tipo_sanguineo.strip().upper()
+    # Mudança de especialidade/departamento — validação cruzada
+    novo_dep = id_departamento if id_departamento is not None else med["id_departamento"]
+    nova_esp = especialidade.strip().title() if especialidade is not None else med["especialidade"]
 
-    if alergias is not None:
-        pac["alergias"] = alergias.strip()
-    if doencas_cronicas is not None:
-        pac["doencas_cronicas"] = doencas_cronicas.strip()
-    if cirurgias_anteriores is not None:
-        pac["cirurgias_anteriores"] = cirurgias_anteriores.strip()
-
-    if id_medico is not None:
-        if not medico_existe(id_medico.strip()):
-            msg = f"Médico '{id_medico}' não encontrado."
+    if id_departamento is not None or especialidade is not None:
+        if not departamento_existe(novo_dep):
+            msg = f"Departamento '{novo_dep}' não encontrado."
             log_servidor(404, msg)
             return 404, msg
-        pac["id_medico"] = id_medico.strip()
+        especialidades_dep = obter_especialidades_departamento(novo_dep)
+        if nova_esp not in especialidades_dep:
+            msg = (f"A especialidade '{nova_esp}' não pertence ao departamento "
+                   f"'{novo_dep}' (especialidades: {', '.join(especialidades_dep)}).")
+            log_servidor(400, msg)
+            return 400, msg
+        # Realocação
+        if id_departamento is not None and id_departamento != med["id_departamento"]:
+            _desalocar_medico(med["id_departamento"], id_med)
+            _alocar_medico(novo_dep, id_med)
+            med["id_departamento"] = novo_dep
+        med["especialidade"] = nova_esp
 
-    pac["atualizado_em"] = _agora()
-    log_servidor(200, f"Paciente '{id_pac}' atualizado.")
-    return 200, dict(pac)
+    if idiomas is not None:
+        med["idiomas"] = idiomas.strip()
+    if ponto_forte is not None:
+        med["ponto_forte"] = ponto_forte.strip()
+    if ponto_fraco is not None:
+        med["ponto_fraco"] = ponto_fraco.strip()
+    if horario_turno is not None:
+        med["horario_turno"] = horario_turno.strip()
+
+    if cargo is not None:
+        cargo_norm = cargo.strip().title()
+        if cargo_norm not in CARGOS_VALIDOS:
+            msg = f"Cargo inválido. Valores permitidos: {', '.join(sorted(CARGOS_VALIDOS))}."
+            log_servidor(400, msg)
+            return 400, msg
+        med["cargo"] = cargo_norm
+
+    med["atualizado_em"] = _agora()
+    log_servidor(200, f"Médico '{id_med}' atualizado.")
+    return 200, dict(med)
 
 
 # ─── REMOVER ──────────────────────────────────
 
-def remover_paciente(id_pac: str) -> tuple:
-    if id_pac not in _pacientes:
-        msg = f"Paciente '{id_pac}' não encontrado."
+def remover_medico(id_med: str) -> tuple:
+    if id_med not in _medicos:
+        msg = f"Médico '{id_med}' não encontrado."
         log_servidor(404, msg)
         return 404, msg
 
-    # Integridade referencial — não pode ter internamento ativo
-    if paciente_tem_internamento_ativo(id_pac):
-        msg = (f"Não é possível remover o paciente '{id_pac}': "
-               "tem um internamento ativo. Dê alta primeiro.")
+    # Integridade referencial
+    if medico_tem_consultas_ativas(id_med):
+        msg = (f"Não é possível remover o médico '{id_med}': "
+               "tem consultas com status 'Agendada'. Cancele-as primeiro.")
         log_servidor(409, msg)
         return 409, msg
 
-    pac = _pacientes.pop(id_pac)
-    log_servidor(200, f"Paciente '{pac['nome']}' (ID: {id_pac}) removido.")
-    return 200, f"Paciente '{pac['nome']}' removido com sucesso."
+    if medico_tem_internamentos_ativos(id_med):
+        msg = (f"Não é possível remover o médico '{id_med}': "
+               "tem internamentos ativos. Transfira os doentes primeiro.")
+        log_servidor(409, msg)
+        return 409, msg
+
+    med = _medicos.pop(id_med)
+    _desalocar_medico(med["id_departamento"], id_med)
+    log_servidor(200, f"Médico '{med['nome']}' (ID: {id_med}) removido.")
+    return 200, f"Médico '{med['nome']}' removido com sucesso."
 
 
 # ─── UTILITÁRIO PRIVADO ───────────────────────
