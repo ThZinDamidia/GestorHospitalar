@@ -7,7 +7,6 @@ import re
 import random
 from datetime import datetime, date
 
-
 # ─── CONTADORES DE IDs ────────────────────────
 
 _counters = {
@@ -59,16 +58,17 @@ def gerar_nif_valido() -> int:
             return int("".join(map(str, digitos)))
 
 
-# ─── VALIDAÇÕES ───────────────────────────────
+# ─── CONSTANTES ───────────────────────────────
 
 _DATA_FMT = "%Y-%m-%d"
 _HORA_FMT = "%H:%M"
 
 TIPOS_SANGUINEOS = {"A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"}
-
 STATUS_CONSULTA = {"Agendada", "Concluida", "Cancelada"}
 STATUS_INTERNAMENTO = {"Ativo", "Alta", "Transferido"}
 
+
+# ─── VALIDAÇÕES ───────────────────────────────
 
 def validar_data(texto: str) -> bool:
     """Valida formato YYYY-MM-DD e que a data existe no calendário."""
