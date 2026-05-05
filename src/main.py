@@ -14,7 +14,7 @@ def _importar_modulos():
     erros = []
     modulos = {}
 
-    for nome in ["departamento", "medico", "paciente", "consulta", "internamento"]:
+    for nome in ["departamento", "medico", "paciente", "consulta"]:
         try:
             modulos[nome] = __import__(nome)
         except ImportError as e:
