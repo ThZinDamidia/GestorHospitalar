@@ -1,159 +1,154 @@
-# ==============================
-# hospital.py
-# CRUD de Hospitais (serviços/alas hospitalares)
-# ==============================
+from utils import log_servidor
 
-from utils import gerar_id_hospital, validar_nome, normalizar_nome, log_servidor
-from datetime import datetime
-
-_hospitais: dict = {}
+_unidades = {}
+_contador_unidades = 1
 
 
-# ─── HELPERS INTERNOS ────────────────────────
-
-def _hos_existe(id_hos: str) -> bool:
-    return id_hos in _hospitais
-
-def hospital_existe(id_hos: str) -> bool:
-    return _hos_existe(id_hos)
-
-def obter_especialidades_hospital(id_hos: str) -> list:
-    if not _hos_existe(id_hos):
-        return []
-    return list(_hospitais[id_hos]["especialidades"])
-
-def _alocar_medico(id_hos: str, id_med: str) -> None:
-    if _hos_existe(id_hos) and id_med not in _hospitais[id_hos]["medicos"]:
-        _hospitais[id_hos]["medicos"].append(id_med)
-
-def _desalocar_medico(id_hos: str, id_med: str) -> None:
-    if _hos_existe(id_hos):
-        _hospitais[id_hos]["medicos"] = [
-            m for m in _hospitais[id_hos]["medicos"] if m != id_med
-        ]
-
-def _agora() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+def _gerar_id_unidade():
+    global _contador_unidades
+    novo_id = f"U{_contador_unidades:03d}"
+    _contador_unidades += 1
+    return novo_id
 
 
-# ─── CRIAR ────────────────────────────────────
+def criar_unidade(nome, localizacao, tipo, capacidade_maxima):
+    """
+    Cria uma nova unidade de saúde.
+    tipo: 'Hospital Regional' | 'Centro de Saúde' | 'Clínica'
+    capacidade_maxima: número máximo de médicos vinculados
+    """
+    if not nome or not nome.strip():
+        log_servidor(400, "Nome da unidade nao pode estar vazio.")
+        return 400, "Nome da unidade nao pode estar vazio."
 
-def criar_hospital(nome: str, especialidades: list, descricao: str = "") -> tuple:
-    ok, erro = validar_nome(nome)
-    if not ok:
-        log_servidor(400, erro)
-        return 400, erro
+    if not localizacao or not localizacao.strip():
+        log_servidor(400, "Localizacao nao pode estar vazia.")
+        return 400, "Localizacao nao pode estar vazia."
 
-    if not especialidades or not isinstance(especialidades, list):
-        msg = "É necessário fornecer pelo menos uma especialidade."
-        log_servidor(400, msg)
-        return 400, msg
+    tipos_validos = ["Hospital Regional", "Centro de Saude", "Clinica"]
+    if tipo not in tipos_validos:
+        log_servidor(400, f"Tipo invalido. Opcoes: {tipos_validos}")
+        return 400, f"Tipo invalido. Use: {', '.join(tipos_validos)}"
 
-    especialidades_norm = [e.strip().title() for e in especialidades if e.strip()]
-    if not especialidades_norm:
-        msg = "Especialidades não podem ser strings vazias."
-        log_servidor(400, msg)
-        return 400, msg
+    try:
+        capacidade_maxima = int(capacidade_maxima)
+        if capacidade_maxima <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        log_servidor(400, "Capacidade maxima deve ser um inteiro positivo.")
+        return 400, "Capacidade maxima invalida."
 
-    nome_norm = normalizar_nome(nome)
-    for hos in _hospitais.values():
-        if hos["nome"] == nome_norm:
-            msg = f"Já existe um hospital/serviço com o nome '{nome_norm}'."
-            log_servidor(409, msg)
-            return 409, msg
+    id_unidade = _gerar_id_unidade()
 
-    id_hos = gerar_id_hospital()
-    _hospitais[id_hos] = {
-        "id": id_hos,
-        "nome": nome_norm,
-        "especialidades": especialidades_norm,
-        "descricao": descricao.strip(),
-        "medicos": [],
-        "criado_em": _agora(),
+    _unidades[id_unidade] = {
+        "nome": nome.strip().title(),
+        "localizacao": localizacao.strip().title(),
+        "tipo": tipo,
+        "capacidade_maxima": capacidade_maxima,
+        "medicos_vinculados": 0,
     }
 
-    log_servidor(201, f"Hospital/Serviço '{nome_norm}' criado. ID: {id_hos}")
-    return 201, dict(_hospitais[id_hos])
+    log_servidor(201, f"Unidade '{nome}' criada com ID: {id_unidade}")
+    return 201, dict(_unidades[id_unidade]) | {"id_unidade": id_unidade}
 
 
-# ─── LISTAR ───────────────────────────────────
+def listar_unidades():
+    if not _unidades:
+        log_servidor(404, "Nenhuma unidade registada.")
+        return 404, "Nenhuma unidade registada."
 
-def listar_hospitais() -> tuple:
-    if not _hospitais:
-        log_servidor(404, "Nenhum hospital/serviço registado.")
-        return 404, "Nenhum hospital/serviço registado."
-    log_servidor(200, "Lista de hospitais recuperada.")
-    return 200, {k: dict(v) for k, v in _hospitais.items()}
-
-
-# ─── CONSULTAR ────────────────────────────────
-
-def consultar_hospital(id_hos: str) -> tuple:
-    if not _hos_existe(id_hos):
-        msg = f"Hospital/Serviço '{id_hos}' não encontrado."
-        log_servidor(404, msg)
-        return 404, msg
-    log_servidor(200, f"Hospital/Serviço '{id_hos}' consultado.")
-    return 200, dict(_hospitais[id_hos])
+    log_servidor(200, "Lista de unidades recuperada.")
+    return 200, {uid: dict(dados) for uid, dados in _unidades.items()}
 
 
-# ─── ATUALIZAR ────────────────────────────────
+def consultar_unidade(id_unidade):
+    if id_unidade not in _unidades:
+        log_servidor(404, f"Unidade '{id_unidade}' nao encontrada.")
+        return 404, f"Unidade '{id_unidade}' nao encontrada."
 
-def atualizar_hospital(id_hos: str, nome: str = None,
-                       especialidades: list = None,
-                       descricao: str = None) -> tuple:
-    if not _hos_existe(id_hos):
-        msg = f"Hospital/Serviço '{id_hos}' não encontrado."
-        log_servidor(404, msg)
-        return 404, msg
-
-    hos = _hospitais[id_hos]
-
-    if nome is not None:
-        ok, erro = validar_nome(nome)
-        if not ok:
-            log_servidor(400, erro)
-            return 400, erro
-        nome_norm = normalizar_nome(nome)
-        for k, h in _hospitais.items():
-            if k != id_hos and h["nome"] == nome_norm:
-                msg = f"Já existe um hospital/serviço com o nome '{nome_norm}'."
-                log_servidor(409, msg)
-                return 409, msg
-        hos["nome"] = nome_norm
-
-    if especialidades is not None:
-        esp_norm = [e.strip().title() for e in especialidades if e.strip()]
-        if not esp_norm:
-            msg = "Especialidades não podem ficar vazias."
-            log_servidor(400, msg)
-            return 400, msg
-        hos["especialidades"] = esp_norm
-
-    if descricao is not None:
-        hos["descricao"] = descricao.strip()
-
-    log_servidor(200, f"Hospital/Serviço '{id_hos}' atualizado.")
-    return 200, dict(hos)
+    log_servidor(200, f"Unidade '{id_unidade}' encontrada.")
+    return 200, dict(_unidades[id_unidade]) | {"id_unidade": id_unidade}
 
 
-# ─── REMOVER ──────────────────────────────────
+def atualizar_unidade(id_unidade, nome=None, localizacao=None, tipo=None, capacidade_maxima=None):
+    if id_unidade not in _unidades:
+        log_servidor(404, f"Unidade '{id_unidade}' nao encontrada.")
+        return 404, f"Unidade '{id_unidade}' nao encontrada."
 
-def remover_hospital(id_hos: str) -> tuple:
-    if not _hos_existe(id_hos):
-        msg = f"Hospital/Serviço '{id_hos}' não encontrado."
-        log_servidor(404, msg)
-        return 404, msg
+    unidade = _unidades[id_unidade]
 
-    hos = _hospitais[id_hos]
-    if hos["medicos"]:
-        msg = (f"Não é possível remover '{hos['nome']}': "
-               f"tem {len(hos['medicos'])} médico(s) alocado(s). "
-               f"Realoque os médicos primeiro.")
-        log_servidor(409, msg)
-        return 409, msg
+    if nome is not None and nome.strip():
+        unidade["nome"] = nome.strip().title()
 
-    nome = hos["nome"]
-    del _hospitais[id_hos]
-    log_servidor(200, f"Hospital/Serviço '{nome}' (ID: {id_hos}) removido.")
-    return 200, f"Hospital/Serviço '{nome}' removido com sucesso."
+    if localizacao is not None and localizacao.strip():
+        unidade["localizacao"] = localizacao.strip().title()
+
+    if tipo is not None:
+        tipos_validos = ["Hospital Regional", "Centro de Saude", "Clinica"]
+        if tipo not in tipos_validos:
+            log_servidor(400, f"Tipo invalido: {tipo}")
+            return 400, f"Tipo invalido. Use: {', '.join(tipos_validos)}"
+        unidade["tipo"] = tipo
+
+    if capacidade_maxima is not None:
+        try:
+            nova_cap = int(capacidade_maxima)
+            if nova_cap < unidade["medicos_vinculados"]:
+                log_servidor(400, "Nova capacidade inferior ao numero de medicos ja vinculados.")
+                return 400, (
+                    f"Capacidade invalida: a unidade ja tem {unidade['medicos_vinculados']} "
+                    f"medicos vinculados."
+                )
+            unidade["capacidade_maxima"] = nova_cap
+        except (ValueError, TypeError):
+            log_servidor(400, "Capacidade invalida.")
+            return 400, "Capacidade maxima invalida."
+
+    log_servidor(200, f"Unidade '{id_unidade}' atualizada.")
+    return 200, dict(unidade) | {"id_unidade": id_unidade}
+
+
+def remover_unidade(id_unidade):
+    if id_unidade not in _unidades:
+        log_servidor(404, f"Unidade '{id_unidade}' nao encontrada.")
+        return 404, f"Unidade '{id_unidade}' nao encontrada."
+
+    if _unidades[id_unidade]["medicos_vinculados"] > 0:
+        log_servidor(409, f"Unidade '{id_unidade}' tem medicos vinculados.")
+        return 409, (
+            f"Nao e possivel remover: a unidade ainda tem "
+            f"{_unidades[id_unidade]['medicos_vinculados']} medico(s) vinculado(s)."
+        )
+
+    nome = _unidades.pop(id_unidade)["nome"]
+    log_servidor(200, f"Unidade '{nome}' removida.")
+    return 200, nome
+
+
+def unidade_existe(id_unidade):
+    return id_unidade in _unidades
+
+
+def verificar_capacidade(id_unidade):
+    """
+    Verifica se a unidade pode receber mais um médico.
+    Retorna True se houver vaga, False se estiver lotada.
+    """
+    if id_unidade not in _unidades:
+        return False
+    u = _unidades[id_unidade]
+    return u["medicos_vinculados"] < u["capacidade_maxima"]
+
+
+def incrementar_medicos(id_unidade):
+    """Chamado pelo módulo médico ao criar um médico vinculado a esta unidade."""
+    if id_unidade in _unidades:
+        _unidades[id_unidade]["medicos_vinculados"] += 1
+
+
+def decrementar_medicos(id_unidade):
+    """Chamado pelo módulo médico ao remover um médico desta unidade."""
+    if id_unidade in _unidades:
+        _unidades[id_unidade]["medicos_vinculados"] = max(
+            0, _unidades[id_unidade]["medicos_vinculados"] - 1
+        )
