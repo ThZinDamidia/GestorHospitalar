@@ -1,64 +1,93 @@
-# 🏥 Sistema de Gestão Hospitalar (HMS)
+# 🏥 Sistema de Gestão Hospitalar
 
-![Python Version](https://img.shields.io/badge/python-3.8%2B-blue?logo=python)
-![Status](https://img.shields.io/badge/status-fase%200%20(CRUD)-green)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
-
-Este é um sistema de linha de comando (CLI) robusto desenvolvido em Python para a gestão centralizada de **Médicos** e **Pacientes**. O projeto diferencia-se por simular o comportamento de uma **API Backend real**, utilizando um sistema de logs baseado em *Status Codes HTTP* para validar operações.
+Sistema de gestão hospitalar desenvolvido em Python, com arquitetura modular orientada a entidades. Permite gerir Unidades de Saúde, Médicos, Pacientes e Consultas através de menus interativos em linha de comandos.
 
 ---
 
-## 🚀 Funcionalidades Core
+## 📁 Estrutura do Projeto
 
-### 👨‍⚕️ Módulo de Gestão Médica
-* **Cadastro Inteligente:** Geração automática de ID único (ex: `M001`) e validação rigorosa de datas.
-* **Perfil 360º:** Registo de especialidades, competências linguísticas, pontos fortes/fracos e alocação de turnos.
-* **Operações CRUD:** Listagem completa, consulta individualizada por ID, atualização dinâmica de campos e remoção lógica.
-
-### 👤 Módulo de Gestão de Pacientes
-* **Segurança de Identidade:** Geração de **NIF (Número de Identificação Fiscal)** validado por algoritmo oficial de dígito de controlo.
-* **Integridade Referencial:** Vínculo obrigatório entre o paciente e um médico responsável existente no sistema.
-* **Prontuário Clínico:** Gestão de alergias, histórico de doenças crónicas e intervenções cirúrgicas anteriores.
-
----
-
-## 🛠️ Arquitetura e Tecnologias
-
-O software foi construído seguindo princípios de **Modularidade** para facilitar a manutenção e escalabilidade:
-
-| Ficheiro | Responsabilidade |
-| :--- | :--- |
-| `main.py` | Interface do Utilizador (CLI) e Orquestração de Menus. |
-| `medico.py` | Lógica de negócio e Persistência em Memória para Médicos. |
-| `paciente.py` | Lógica de negócio e Persistência em Memória para Pacientes. |
-| `ultils.py` | *Helpers*: Geradores de ID/NIF, Validadores de Data e Logs de Sistema. |
+```
+GestorHospitalar/
+└── src/
+    ├── main.py        # Ponto de entrada — menus e navegação
+    ├── unidade.py     # Entidade: Unidade de Saúde
+    ├── medico.py      # Entidade: Médico
+    ├── paciente.py    # Entidade: Paciente
+    ├── consulta.py    # Entidade: Consulta
+    └── ultils.py      # Funções utilitárias partilhadas
+```
 
 ---
 
-## 📡 Protocolo de Comunicação (Simulação HTTP)
+## ▶️ Como Executar
 
-Para garantir uma experiência próxima de sistemas reais, o software comunica o sucesso ou erro das operações através de códigos de estado:
+```bash
+cd src
+PYTHONPATH=. python main.py
+```
 
-* 🟢 **`[HTTP 201]` - Created:** Novo registo inserido com sucesso.
-* 🔵 **`[HTTP 200]` - OK:** Consulta, atualização ou remoção processada sem erros.
-* 🟡 **`[HTTP 400]` - Bad Request:** Falha de validação (ex: formato de data inválido ou campos vazios).
-* 🔴 **`[HTTP 404]` - Not Found:** Identificador (ID ou NIF) inexistente na base de dados.
+> **Nota:** O `PYTHONPATH=.` é necessário para que o Python encontre os módulos locais corretamente no GitHub Codespaces.
 
 ---
 
-## ⚙️ Instalação e Execução
+## ⚙️ Funcionalidades
 
-1. Clone este repositório:
-   ```bash
-   git clone [https://github.com/teu-utilizador/hospital-management-system.git](https://github.com/teu-utilizador/hospital-management-system.git)
+### 🏢 Unidade de Saúde
+- Criar, listar, consultar, atualizar e remover unidades
+- Tipos: `Hospital Regional`, `Centro de Saude`, `Clinica`
+- Controlo de capacidade máxima de médicos por unidade
+- Impede remoção de unidade com médicos vinculados
 
+### 👨‍⚕️ Médico
+- CRUD completo com validação de datas
+- Vinculação obrigatória a uma Unidade de Saúde existente
+- Bloqueio automático se a unidade atingiu a capacidade máxima (HTTP 403)
+- Contador de médicos na unidade atualizado automaticamente
 
-📁 Estrutura do Projeto
-Plaintext
+### 🧑‍🤝‍🧑 Paciente
+- CRUD completo com geração automática de NIF válido (algoritmo oficial português)
+- Registo de alergias, doenças crónicas e cirurgias anteriores
+- Vinculação obrigatória a um Médico registado
 
-├── main.py          # Ponto de entrada do programa (Menus)
-├── medico.py        # Lógica e dicionários de médicos
-├── paciente.py      # Lógica e dicionários de pacientes
-└── ultils.py        # Funções utilitárias (Geradores de ID/NIF e Logs)
+### 📋 Consulta
+- Criação com data/hora, sintomas e observações clínicas
+- Estados: `Agendada` → `Realizada` / `Cancelada`
+- Listagem com filtros por médico, paciente (NIF) ou estado
+- Impede edição de consultas canceladas
 
+---
 
+## 🔐 Validações e Regras de Negócio
+
+| Regra | Comportamento |
+|---|---|
+| Unidade sem vagas | HTTP 403 — médico não é criado |
+| Médico não existe | HTTP 404 — paciente/consulta não é criado |
+| NIF inválido | Gerado automaticamente com dígito de controlo |
+| Data inválida | HTTP 400 — operação rejeitada |
+| Unidade com médicos | HTTP 409 — não pode ser removida |
+| Consulta cancelada | HTTP 409 — não pode ser editada |
+
+---
+
+## 🧩 Arquitetura
+
+O sistema segue uma arquitetura em camadas simples:
+
+```
+main.py  (Interface / Menus)
+    │
+    ├── unidade.py   ←── ultils.py
+    ├── medico.py    ←── ultils.py + unidade.py
+    ├── paciente.py  ←── ultils.py
+    └── consulta.py  ←── ultils.py
+```
+
+Cada módulo é independente e expõe uma API clara com códigos HTTP (`200`, `201`, `400`, `403`, `404`, `409`) para comunicar o resultado de cada operação.
+
+---
+
+## 🛠️ Tecnologias
+
+- **Python 3** — sem dependências externas
+- **Armazenamento em memória** — dicionários Python (`_medicos`, `_pacientes`, etc.)

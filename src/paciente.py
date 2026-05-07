@@ -1,14 +1,18 @@
-from utils import gerar_nif_valido, validar_data, log_servidor
+from ultils import gerar_nif_valido, validar_data, log_servidor
 
 _pacientes = {}
 
 def criar_paciente(nome, data_nascimento, nacionalidade, tipo_sanguineo,
                    alergias, doencas_cronicas, cirurgias_anteriores, id_medico):
-    
+
     if not nome or not nome.strip():
         log_servidor(400, "Nome nao pode estar vazio.")
         return 400, "Nome nao pode estar vazio."
         
+    if not validar_data(data_nascimento):
+        log_servidor(400, "Data de nascimento invalida. Use YYYY-MM-DD.")
+        return 400, "Data de nascimento invalida."
+
     if not validar_data(data_nascimento):
         log_servidor(400, "Data de nascimento invalida. Use YYYY-MM-DD.")
         return 400, "Data de nascimento invalida."
@@ -41,7 +45,6 @@ def listar_pacientes():
     if not _pacientes:
         log_servidor(404, "Nenhum paciente registado.")
         return 404, "Nenhum paciente registado."
-
     log_servidor(200, "Lista de pacientes recuperada.")
     return 200, dict(_pacientes)
 
@@ -49,14 +52,13 @@ def consultar_paciente(nif):
     if nif not in _pacientes:
         log_servidor(404, f"Paciente NIF '{nif}' nao encontrado.")
         return 404, f"Paciente NIF '{nif}' nao encontrado."
-
     log_servidor(200, f"Paciente NIF '{nif}' encontrado.")
     return 200, dict(_pacientes[nif])
 
 def atualizar_paciente(nif, nome=None, data_nascimento=None, nacionalidade=None,
                        tipo_sanguineo=None, alergias=None, doencas_cronicas=None,
                        cirurgias_anteriores=None, id_medico=None):
-    
+
     if nif not in _pacientes:
         log_servidor(404, f"Paciente NIF '{nif}' nao encontrado.")
         return 404, f"Paciente NIF '{nif}' nao encontrado."
@@ -71,7 +73,6 @@ def atualizar_paciente(nif, nome=None, data_nascimento=None, nacionalidade=None,
             log_servidor(400, "Data de nascimento invalida.")
             return 400, "Data de nascimento invalida."
         pac["data_nascimento"] = data_nascimento
-        
     if nacionalidade is not None: pac["nacionalidade"] = nacionalidade
     if tipo_sanguineo is not None: pac["tipo_sanguineo"] = tipo_sanguineo
     if alergias is not None: pac["alergias"] = alergias
@@ -86,7 +87,6 @@ def remover_paciente(nif):
     if nif not in _pacientes:
         log_servidor(404, f"Paciente NIF '{nif}' nao encontrado.")
         return 404, f"Paciente NIF '{nif}' nao encontrado."
-
     nome = _pacientes.pop(nif)["nome"]
     log_servidor(200, f"Paciente '{nome}' (NIF: {nif}) removido.")
     return 200, nome
