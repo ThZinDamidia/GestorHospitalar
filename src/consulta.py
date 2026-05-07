@@ -1,4 +1,4 @@
-from utils import validar_data, log_servidor
+from ultils import validar_data, log_servidor
 from datetime import datetime
 
 _consultas = {}
