@@ -1,4 +1,4 @@
-from utils import gerar_nif_valido, validar_data, log_servidor
+from ultils import gerar_nif_valido, validar_data, log_servidor
 
 _pacientes = {}
 
