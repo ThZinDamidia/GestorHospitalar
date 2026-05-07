@@ -8,6 +8,10 @@ def criar_paciente(nome, data_nascimento, nacionalidade, tipo_sanguineo,
     if not nome or not nome.strip():
         log_servidor(400, "Nome nao pode estar vazio.")
         return 400, "Nome nao pode estar vazio."
+        
+    if not validar_data(data_nascimento):
+        log_servidor(400, "Data de nascimento invalida. Use YYYY-MM-DD.")
+        return 400, "Data de nascimento invalida."
 
     if not validar_data(data_nascimento):
         log_servidor(400, "Data de nascimento invalida. Use YYYY-MM-DD.")
@@ -37,7 +41,6 @@ def criar_paciente(nome, data_nascimento, nacionalidade, tipo_sanguineo,
     log_servidor(201, f"Paciente '{nome}' criado com sucesso. NIF: {nif}")
     return 201, dict(_pacientes[nif])
 
-
 def listar_pacientes():
     if not _pacientes:
         log_servidor(404, "Nenhum paciente registado.")
@@ -45,14 +48,12 @@ def listar_pacientes():
     log_servidor(200, "Lista de pacientes recuperada.")
     return 200, dict(_pacientes)
 
-
 def consultar_paciente(nif):
     if nif not in _pacientes:
         log_servidor(404, f"Paciente NIF '{nif}' nao encontrado.")
         return 404, f"Paciente NIF '{nif}' nao encontrado."
     log_servidor(200, f"Paciente NIF '{nif}' encontrado.")
     return 200, dict(_pacientes[nif])
-
 
 def atualizar_paciente(nif, nome=None, data_nascimento=None, nacionalidade=None,
                        tipo_sanguineo=None, alergias=None, doencas_cronicas=None,
@@ -66,6 +67,7 @@ def atualizar_paciente(nif, nome=None, data_nascimento=None, nacionalidade=None,
 
     if nome is not None and nome.strip():
         pac["nome"] = nome.strip().title()
+        
     if data_nascimento is not None:
         if not validar_data(data_nascimento):
             log_servidor(400, "Data de nascimento invalida.")
@@ -80,7 +82,6 @@ def atualizar_paciente(nif, nome=None, data_nascimento=None, nacionalidade=None,
 
     log_servidor(200, f"Paciente NIF '{nif}' atualizado com sucesso.")
     return 200, dict(pac)
-
 
 def remover_paciente(nif):
     if nif not in _pacientes:

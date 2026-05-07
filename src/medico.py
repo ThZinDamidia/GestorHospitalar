@@ -3,7 +3,6 @@ from unidade import unidade_existe, verificar_capacidade, incrementar_medicos, d
 
 _medicos = {}
 
-
 def criar_medico(nome, data_nascimento, nacionalidade, especialidade,
                  data_registo, idiomas, ponto_forte, ponto_fraco,
                  id_unidade, horario_turno, cargo):
@@ -55,7 +54,6 @@ def criar_medico(nome, data_nascimento, nacionalidade, especialidade,
     log_servidor(201, f"Medico '{nome}' criado com sucesso. ID: {id_medico}")
     return 201, dict(_medicos[id_medico]) | {"id_medico": id_medico}
 
-
 def listar_medicos():
     if not _medicos:
         log_servidor(404, "Nenhum medico registado.")
@@ -64,7 +62,6 @@ def listar_medicos():
     log_servidor(200, "Lista de medicos recuperada.")
     return 200, dict(_medicos)
 
-
 def consultar_medico(id_medico):
     if id_medico not in _medicos:
         log_servidor(404, f"Medico ID '{id_medico}' nao encontrado.")
@@ -72,7 +69,6 @@ def consultar_medico(id_medico):
 
     log_servidor(200, f"Medico ID '{id_medico}' encontrado.")
     return 200, dict(_medicos[id_medico])
-
 
 def atualizar_medico(id_medico, nome=None, data_nascimento=None, nacionalidade=None,
                      especialidade=None, data_registo=None, idiomas=None,
@@ -133,7 +129,6 @@ def atualizar_medico(id_medico, nome=None, data_nascimento=None, nacionalidade=N
     log_servidor(200, f"Medico ID '{id_medico}' atualizado com sucesso.")
     return 200, dict(medico)
 
-
 def remover_medico(id_medico):
     if id_medico not in _medicos:
         log_servidor(404, f"Medico ID '{id_medico}' nao encontrado.")
@@ -145,7 +140,6 @@ def remover_medico(id_medico):
 
     log_servidor(200, f"Medico '{nome}' (ID: {id_medico}) removido.")
     return 200, nome
-
 
 def medico_existe(id_medico):
     return id_medico in _medicos

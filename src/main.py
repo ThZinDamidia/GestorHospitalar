@@ -333,6 +333,7 @@ def submenu_paciente():
                 print(f"\n❌ Erro: Médico '{id_medico.strip()}' não encontrado.")
                 continue
 
+         
             code, obj = atualizar_paciente(
                 nif,
                 nome      if nome.strip() else None,
