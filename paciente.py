@@ -2,17 +2,17 @@ from ultils import gerar_nif_valido, validar_data, log_servidor
 import json
 import os
 _pacientes = {}
-paciente_ficheiro = "paciente_ficheiro"
+paciente_ficheiro = "paciente_ficheiro.json"
 def carregar_paciente():
     with open(paciente_ficheiro,"w", encoding="utf-8") as paciente:
-        json.dump(_pacientes, paciente_ficheiro, indent=4, ensure_ascii=False)
+        json.dump(_pacientes, paciente, indent=4, ensure_ascii=False)
 def guardar_paciente():
     global _pacientes
-    if os.path.exists():
+    if os.path.exists(paciente_ficheiro):
         with open(paciente_ficheiro,"r", encoding="utf-8") as paciente:
-            ficheiro = json.load(paciente)
+            _pacientes = json.load(paciente)
     else:
-        paciente = {}
+        _pacientes = {}
 
 def criar_paciente(nome, data_nascimento, nacionalidade, tipo_sanguineo,
                    alergias, doencas_cronicas, cirurgias_anteriores, id_medico):
