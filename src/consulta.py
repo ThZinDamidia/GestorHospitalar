@@ -42,7 +42,7 @@ def criar_consulta(id_medico, id_paciente, data_hora, sintomas, observacoes=""):
     Cria uma nova consulta.
     data_hora: formato 'YYYY-MM-DD HH:MM'
     """
-    adicionar_paciente()
+    guardar_paciente()
     if not id_medico or not id_medico.strip():
         log_servidor(400, "ID do medico nao pode estar vazio.")
         return 400, "ID do medico invalido."
@@ -71,7 +71,7 @@ def criar_consulta(id_medico, id_paciente, data_hora, sintomas, observacoes=""):
     }
 
     log_servidor(201, f"Consulta '{id_consulta}' criada: medico={id_medico}, paciente NIF={id_paciente}.")
-    guardar_paciente()
+    adicionar_paciente()
     return 201, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
 
 
@@ -80,7 +80,7 @@ def listar_consultas(filtro_medico=None, filtro_paciente=None, filtro_estado=Non
     """
     Lista consultas com filtros opcionais por médico, paciente (NIF) ou estado.
     """
-    adicionar_paciente()
+    carregar_consulta()
     if not _consultas:
         log_servidor(404, "Nenhuma consulta registada.")
         return 404, "Nenhuma consulta registada."
@@ -115,7 +115,7 @@ def consultar_consulta(id_consulta):
 
 def atualizar_consulta(id_consulta, data_hora=None, sintomas=None,
                        observacoes=None, estado=None):
-    adicionar_paciente()
+    guardar_unidade()
     if id_consulta not in _consultas:
         log_servidor(404, f"Consulta '{id_consulta}' nao encontrada.")
         return 404, f"Consulta '{id_consulta}' nao encontrada."
@@ -146,7 +146,7 @@ def atualizar_consulta(id_consulta, data_hora=None, sintomas=None,
         consulta["estado"] = estado
 
     log_servidor(200, f"Consulta '{id_consulta}' atualizada.")
-    guardar_paciente()
+    adicionar_paciente()
     return 200, dict(consulta) | {"id_consulta": id_consulta}
     
 
@@ -169,13 +169,13 @@ def cancelar_consulta(id_consulta):
 
 
 def remover_consulta(id_consulta):
-    adicionar_paciente()
+    guardar_paciente()
     if id_consulta not in _consultas:
         log_servidor(404, f"Consulta '{id_consulta}' nao encontrada.")
         return 404, f"Consulta '{id_consulta}' nao encontrada."
     _consultas.pop(id_consulta)
     log_servidor(200, f"Consulta '{id_consulta}' removida.")
-    guardar_paciente()
+    adicionar_paciente()
     return 200, f"Consulta '{id_consulta}' removida com sucesso."
     
 
