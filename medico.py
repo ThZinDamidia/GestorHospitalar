@@ -6,16 +6,16 @@ _medicos = {}
 
 medico_ficheiro = "medico_ficheiro.json"
 def carregar_medico():
-    with open(medico_ficheiro, "w", encoding="utf-8") as consultas:
-        json.dump(_medicos,medico_ficheiro, indent=4, ensure_ascii=False)
+    with open(medico_ficheiro, "w", encoding="utf-8") as medicos:
+        json.dump(_medicos,medicos, indent=4, ensure_ascii=False)
 
 def guardar_medico():
     global _medicos
-    if os.path.exists():
+    if os.path.exists(medico_ficheiro):
         with open(medico_ficheiro, "r", encoding="utf-8") as medico:
-            ficheiro = json.load(medicos)
+            _medicos = json.load(medicos)
     else:
-        medicos = {}
+        _medicos = {}
 
 
 
