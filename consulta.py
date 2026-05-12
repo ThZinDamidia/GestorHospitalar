@@ -71,8 +71,9 @@ def criar_consulta(id_medico, id_paciente, data_hora, sintomas, observacoes=""):
     }
 
     log_servidor(201, f"Consulta '{id_consulta}' criada: medico={id_medico}, paciente NIF={id_paciente}.")
+    guardar_paciente()
     return 201, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
-    guardar()
+
 
 
 def listar_consultas(filtro_medico=None, filtro_paciente=None, filtro_estado=None):
@@ -110,8 +111,7 @@ def consultar_consulta(id_consulta):
 
     log_servidor(200, f"Consulta '{id_consulta}' encontrada.")
     return 200, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
-    guardar_paciente()
-
+   
 
 def atualizar_consulta(id_consulta, data_hora=None, sintomas=None,
                        observacoes=None, estado=None):
@@ -146,8 +146,9 @@ def atualizar_consulta(id_consulta, data_hora=None, sintomas=None,
         consulta["estado"] = estado
 
     log_servidor(200, f"Consulta '{id_consulta}' atualizada.")
-    return 200, dict(consulta) | {"id_consulta": id_consulta}
     guardar_paciente()
+    return 200, dict(consulta) | {"id_consulta": id_consulta}
+    
 
 
 def cancelar_consulta(id_consulta):
@@ -162,8 +163,9 @@ def cancelar_consulta(id_consulta):
 
     _consultas[id_consulta]["estado"] = "Cancelada"
     log_servidor(200, f"Consulta '{id_consulta}' cancelada.")
-    return 200, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
     guardar_paciente()
+    return 200, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
+   
 
 
 def remover_consulta(id_consulta):
@@ -173,8 +175,9 @@ def remover_consulta(id_consulta):
         return 404, f"Consulta '{id_consulta}' nao encontrada."
     _consultas.pop(id_consulta)
     log_servidor(200, f"Consulta '{id_consulta}' removida.")
-    return 200, f"Consulta '{id_consulta}' removida com sucesso."
     guardar_paciente()
+    return 200, f"Consulta '{id_consulta}' removida com sucesso."
+    
 
 def consulta_existe(id_consulta):
     guardar_paciente()
