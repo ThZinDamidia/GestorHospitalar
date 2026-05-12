@@ -22,7 +22,7 @@ def guardar_medico():
 def criar_medico(nome, data_nascimento, nacionalidade, especialidade,
                  data_registo, idiomas, ponto_forte, ponto_fraco,
                  id_unidade, horario_turno, cargo):
-    carregar_medico()
+    guardar_medico()
     if not nome or not nome.strip():
         log_servidor(400, "Nome nao pode estar vazio.")
         return 400, "Nome nao pode estar vazio."
@@ -68,7 +68,7 @@ def criar_medico(nome, data_nascimento, nacionalidade, especialidade,
     incrementar_medicos(id_unidade)
 
     log_servidor(201, f"Medico '{nome}' criado com sucesso. ID: {id_medico}")
-    guardar_medico()
+    carregar_medico()
     return 201, dict(_medicos[id_medico]) | {"id_medico": id_medico}
     
 
@@ -94,7 +94,7 @@ def atualizar_medico(id_medico, nome=None, data_nascimento=None, nacionalidade=N
                      especialidade=None, data_registo=None, idiomas=None,
                      ponto_forte=None, ponto_fraco=None, id_unidade=None,
                      horario_turno=None, cargo=None):
-    carregar_medico()
+    guardar_medico()
     if id_medico not in _medicos:
         log_servidor(404, f"Medico ID '{id_medico}' nao encontrado.")
         return 404, f"Medico '{id_medico}' nao encontrado."
@@ -147,12 +147,12 @@ def atualizar_medico(id_medico, nome=None, data_nascimento=None, nacionalidade=N
         medico["cargo"] = cargo
 
     log_servidor(200, f"Medico ID '{id_medico}' atualizado com sucesso.")
-    guardar_medico()
+    carregar_medico()
     return 200, dict(medico)
 
 
 def remover_medico(id_medico):
-    carregar_medico()
+    guardar_medico()
     if id_medico not in _medicos:
         log_servidor(404, f"Medico ID '{id_medico}' nao encontrado.")
         return 404, f"Medico '{id_medico}' nao encontrado."
@@ -162,7 +162,7 @@ def remover_medico(id_medico):
     decrementar_medicos(id_unidade)
 
     log_servidor(200, f"Medico '{nome}' (ID: {id_medico}) removido.")
-    guardar_medico()
+    carregar_medico()
     return 200, nome
 
 
