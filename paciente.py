@@ -51,8 +51,9 @@ def criar_paciente(nome, data_nascimento, nacionalidade, tipo_sanguineo,
     }
 
     log_servidor(201, f"Paciente '{nome}' criado com sucesso. NIF: {nif}")
-    return 201, dict(_pacientes[nif])
     guardar_paciente()
+    return 201, dict(_pacientes[nif])
+   
 
 
 def listar_pacientes():
@@ -99,8 +100,9 @@ def atualizar_paciente(nif, nome=None, data_nascimento=None, nacionalidade=None,
     if id_medico is not None: pac["id_medico"] = id_medico.strip()
 
     log_servidor(200, f"Paciente NIF '{nif}' atualizado com sucesso.")
-    return 200, dict(pac)
     guardar_paciente()
+    return 200, dict(pac)
+    
 
 
 def remover_paciente(nif):
@@ -110,5 +112,6 @@ def remover_paciente(nif):
         return 404, f"Paciente NIF '{nif}' nao encontrado."
     nome = _pacientes.pop(nif)["nome"]
     log_servidor(200, f"Paciente '{nome}' (NIF: {nif}) removido.")
-    return 200, nome
     guardar_paciente()
+    return 200, nome
+   
