@@ -68,8 +68,9 @@ def criar_medico(nome, data_nascimento, nacionalidade, especialidade,
     incrementar_medicos(id_unidade)
 
     log_servidor(201, f"Medico '{nome}' criado com sucesso. ID: {id_medico}")
-    return 201, dict(_medicos[id_medico]) | {"id_medico": id_medico}
     guardar_medico()
+    return 201, dict(_medicos[id_medico]) | {"id_medico": id_medico}
+    
 
 def listar_medicos():
     carregar_medico()
@@ -146,8 +147,9 @@ def atualizar_medico(id_medico, nome=None, data_nascimento=None, nacionalidade=N
         medico["cargo"] = cargo
 
     log_servidor(200, f"Medico ID '{id_medico}' atualizado com sucesso.")
-    return 200, dict(medico)
     guardar_medico()
+    return 200, dict(medico)
+
 
 def remover_medico(id_medico):
     carregar_medico()
@@ -160,8 +162,9 @@ def remover_medico(id_medico):
     decrementar_medicos(id_unidade)
 
     log_servidor(200, f"Medico '{nome}' (ID: {id_medico}) removido.")
-    return 200, nome
     guardar_medico()
+    return 200, nome
+
 
 def medico_existe(id_medico):
     carregar_medico()
