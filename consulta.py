@@ -6,13 +6,13 @@ import os
 consultas_ficheiro = "consultas.json"
 def adicionar_paciente():
     with open(consultas_ficheiro,"w",encoding="utf-8") as consutas:
-        json.dump(_consultas, consultas_ficheiro, indent=4, ensure_ascii=False)
+        json.dump(_consultas, consultas, indent=4, ensure_ascii=False)
 
 def guardar_paciente():
     global _consultas
     if os.path.exists(consultas_ficheiro):
         with open(consultas_ficheiro,"r") as consultas:
-            ficheiro = json.load(consultas)
+            _consultas = json.load(consultas)
     else:
         consultas = {}
 _consultas = {}
