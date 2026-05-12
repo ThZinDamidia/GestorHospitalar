@@ -7,14 +7,15 @@ _unidades = {}
 _contador_unidades = 1
 unidade_ficheiro = "unidade_ficheiro.json"
 def carregar_unidade():
-    with open(unidade_ficheiro,"w", encondig="utf-8") as unidade:
-        json.dump(_unidades, unidade_ficheiro)
+    with open(unidade_ficheiro,"w", encoding="utf-8") as unidade:
+        json.dump(_unidades, unidade, indent=4, ensure_ascii=False)
 def guardar_unidade():
     global _unidades
-    if os.path.exists():
-        _unidades = json.load(unidade_ficheiro)
+    if os.path.exists(unidade_ficheiro):
+         with open(unidade_ficheiro, "r", encoding="utf-8") as unidade:
+            _unidades = json.load(unidade)
     else:
-        unidade = {}
+        _unidades = {}
 def _gerar_id_unidade():
     global _contador_unidades
     novo_id = f"U{_contador_unidades:03d}"
