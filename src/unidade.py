@@ -6,10 +6,10 @@ import os
 _unidades = {}
 _contador_unidades = 1
 unidade_ficheiro = "unidade_ficheiro.json"
-def carregar_unidade():
+def guardar_unidade1():
     with open(unidade_ficheiro,"w", encoding="utf-8") as unidade:
         json.dump(_unidades, unidade, indent=4, ensure_ascii=False)
-def guardar_unidade():
+def carregar_unidade():
     global _unidades
     if os.path.exists(unidade_ficheiro):
          with open(unidade_ficheiro, "r", encoding="utf-8") as unidade:
@@ -29,7 +29,7 @@ def criar_unidade(nome, localizacao, tipo, capacidade_maxima):
     tipo: 'Hospital Regional' | 'Centro de Saúde' | 'Clínica'
     capacidade_maxima: número máximo de médicos vinculados
     """
-    guardar_unidade()
+    carregar_unidade()
     if not nome or not nome.strip():
         log_servidor(400, "Nome da unidade nao pode estar vazio.")
         return 400, "Nome da unidade nao pode estar vazio."
@@ -62,7 +62,7 @@ def criar_unidade(nome, localizacao, tipo, capacidade_maxima):
     }
 
     log_servidor(201, f"Unidade '{nome}' criada com ID: {id_unidade}")
-    carregar_unidade()
+    guardar_unidade1()
     return 201, dict(_unidades[id_unidade]) | {"id_unidade": id_unidade}
    
 
@@ -85,13 +85,13 @@ def consultar_unidade(id_unidade):
         return 404, f"Unidade '{id_unidade}' nao encontrada."
 
     log_servidor(200, f"Unidade '{id_unidade}' encontrada.")
-    guardar_unidade()
+    carregar_unidade()
     return 200, dict(_unidades[id_unidade]) | {"id_unidade": id_unidade}
  
 
 
 def atualizar_unidade(id_unidade, nome=None, localizacao=None, tipo=None, capacidade_maxima=None):
-    guardar_unidade()
+    carregar_unidade()
     if id_unidade not in _unidades:
         log_servidor(404, f"Unidade '{id_unidade}' nao encontrada.")
         return 404, f"Unidade '{id_unidade}' nao encontrada."
@@ -126,13 +126,13 @@ def atualizar_unidade(id_unidade, nome=None, localizacao=None, tipo=None, capaci
             return 400, "Capacidade maxima invalida."
 
     log_servidor(200, f"Unidade '{id_unidade}' atualizada.")
-    carregar_unidade()
+    guardar_unidade1()
     return 200, dict(unidade) | {"id_unidade": id_unidade}
 
 
 
 def remover_unidade(id_unidade):
-    guardar_unidade()
+    carregar_unidade()
     if id_unidade not in _unidades:
         log_servidor(404, f"Unidade '{id_unidade}' nao encontrada.")
         return 404, f"Unidade '{id_unidade}' nao encontrada."
@@ -146,7 +146,7 @@ def remover_unidade(id_unidade):
 
     nome = _unidades.pop(id_unidade)["nome"]
     log_servidor(200, f"Unidade '{nome}' removida.")
-    carregar_unidade()
+    guardar_unidade1()
     return 200, nome
  
 
@@ -170,18 +170,18 @@ def verificar_capacidade(id_unidade):
 
 
 def incrementar_medicos(id_unidade):
-    guardar_unidade()
+    carregar_unidade()
     """Chamado pelo módulo médico ao criar um médico vinculado a esta unidade."""
     if id_unidade in _unidades:
         _unidades[id_unidade]["medicos_vinculados"] += 1
-    carregar_unidade()
+    guardar_unidade1()
 
 
 def decrementar_medicos(id_unidade):
     """Chamado pelo módulo médico ao remover um médico desta unidade."""
-    guardar_unidade()
+    carregar_unidade()
     if id_unidade in _unidades:
         _unidades[id_unidade]["medicos_vinculados"] = max(
             0, _unidades[id_unidade]["medicos_vinculados"] - 1
         )
-    carregar_unidade()
+    guardar_unidade1()

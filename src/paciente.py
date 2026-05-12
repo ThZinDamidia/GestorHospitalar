@@ -3,10 +3,10 @@ import json
 import os
 _pacientes = {}
 paciente_ficheiro = "paciente_ficheiro.json"
-def carregar_paciente():
+def guardar_paciente1():
     with open(paciente_ficheiro,"w", encoding="utf-8") as paciente:
         json.dump(_pacientes, paciente, indent=4, ensure_ascii=False)
-def guardar_paciente():
+def carregar_paciente():
     global _pacientes
     if os.path.exists(paciente_ficheiro):
         with open(paciente_ficheiro,"r", encoding="utf-8") as paciente:
@@ -16,7 +16,7 @@ def guardar_paciente():
 
 def criar_paciente(nome, data_nascimento, nacionalidade, tipo_sanguineo,
                    alergias, doencas_cronicas, cirurgias_anteriores, id_medico):
-    guardar_paciente()
+    carregar_paciente()
     if not nome or not nome.strip():
         log_servidor(400, "Nome nao pode estar vazio.")
         return 400, "Nome nao pode estar vazio."
@@ -51,7 +51,7 @@ def criar_paciente(nome, data_nascimento, nacionalidade, tipo_sanguineo,
     }
 
     log_servidor(201, f"Paciente '{nome}' criado com sucesso. NIF: {nif}")
-    carregar_paciente()
+    guardar_paciente1()
     return 201, dict(_pacientes[nif])
    
 
@@ -77,7 +77,7 @@ def consultar_paciente(nif):
 def atualizar_paciente(nif, nome=None, data_nascimento=None, nacionalidade=None,
                        tipo_sanguineo=None, alergias=None, doencas_cronicas=None,
                        cirurgias_anteriores=None, id_medico=None):
-    guardar_paciente()
+    carregar_paciente()
     if nif not in _pacientes:
         log_servidor(404, f"Paciente NIF '{nif}' nao encontrado.")
         return 404, f"Paciente NIF '{nif}' nao encontrado."
@@ -100,18 +100,18 @@ def atualizar_paciente(nif, nome=None, data_nascimento=None, nacionalidade=None,
     if id_medico is not None: pac["id_medico"] = id_medico.strip()
 
     log_servidor(200, f"Paciente NIF '{nif}' atualizado com sucesso.")
-    carregar_paciente()
+    guardar_paciente1()
     return 200, dict(pac)
     
 
 
 def remover_paciente(nif):
-    guardar_paciente()
+    carregar_paciente()
     if nif not in _pacientes:
         log_servidor(404, f"Paciente NIF '{nif}' nao encontrado.")
         return 404, f"Paciente NIF '{nif}' nao encontrado."
     nome = _pacientes.pop(nif)["nome"]
     log_servidor(200, f"Paciente '{nome}' (NIF: {nif}) removido.")
-    carregar_paciente()
+    guardar_paciente1()
     return 200, nome
    

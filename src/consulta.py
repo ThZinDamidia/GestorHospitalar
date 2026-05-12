@@ -4,11 +4,11 @@ import json
 import os
 
 consultas_ficheiro = "consultas.json"
-def adicionar_paciente():
+def guardar_consulta1():
     with open(consultas_ficheiro,"w",encoding="utf-8") as consutas:
         json.dump(_consultas, consultas, indent=4, ensure_ascii=False)
 
-def guardar_paciente():
+def carregar_consulta():
     global _consultas
     if os.path.exists(consultas_ficheiro):
         with open(consultas_ficheiro,"r") as consultas:
@@ -42,7 +42,7 @@ def criar_consulta(id_medico, id_paciente, data_hora, sintomas, observacoes=""):
     Cria uma nova consulta.
     data_hora: formato 'YYYY-MM-DD HH:MM'
     """
-    guardar_paciente()
+    carregar_consulta()
     if not id_medico or not id_medico.strip():
         log_servidor(400, "ID do medico nao pode estar vazio.")
         return 400, "ID do medico invalido."
@@ -71,7 +71,7 @@ def criar_consulta(id_medico, id_paciente, data_hora, sintomas, observacoes=""):
     }
 
     log_servidor(201, f"Consulta '{id_consulta}' criada: medico={id_medico}, paciente NIF={id_paciente}.")
-    adicionar_paciente()
+     guardar_consulta1()
     return 201, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
 
 
@@ -104,7 +104,7 @@ def listar_consultas(filtro_medico=None, filtro_paciente=None, filtro_estado=Non
 
 
 def consultar_consulta(id_consulta):
-    adicionar_paciente()
+     carregar_consulta()
     if id_consulta not in _consultas:
         log_servidor(404, f"Consulta '{id_consulta}' nao encontrada.")
         return 404, f"Consulta '{id_consulta}' nao encontrada."
@@ -115,7 +115,7 @@ def consultar_consulta(id_consulta):
 
 def atualizar_consulta(id_consulta, data_hora=None, sintomas=None,
                        observacoes=None, estado=None):
-    guardar_unidade()
+    carregar_consulta()
     if id_consulta not in _consultas:
         log_servidor(404, f"Consulta '{id_consulta}' nao encontrada.")
         return 404, f"Consulta '{id_consulta}' nao encontrada."
@@ -146,13 +146,13 @@ def atualizar_consulta(id_consulta, data_hora=None, sintomas=None,
         consulta["estado"] = estado
 
     log_servidor(200, f"Consulta '{id_consulta}' atualizada.")
-    adicionar_paciente()
+     guardar_consulta1()
     return 200, dict(consulta) | {"id_consulta": id_consulta}
     
 
 
 def cancelar_consulta(id_consulta):
-    adicionar_paciente()
+     carregar_consulta()
     if id_consulta not in _consultas:
         log_servidor(404, f"Consulta '{id_consulta}' nao encontrada.")
         return 404, f"Consulta '{id_consulta}' nao encontrada."
@@ -163,22 +163,22 @@ def cancelar_consulta(id_consulta):
 
     _consultas[id_consulta]["estado"] = "Cancelada"
     log_servidor(200, f"Consulta '{id_consulta}' cancelada.")
-    guardar_paciente()
+    guardar_consulta1()
     return 200, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
    
 
 
 def remover_consulta(id_consulta):
-    guardar_paciente()
+    carregar_consulta()
     if id_consulta not in _consultas:
         log_servidor(404, f"Consulta '{id_consulta}' nao encontrada.")
         return 404, f"Consulta '{id_consulta}' nao encontrada."
     _consultas.pop(id_consulta)
     log_servidor(200, f"Consulta '{id_consulta}' removida.")
-    adicionar_paciente()
+     guardar_consulta1()
     return 200, f"Consulta '{id_consulta}' removida com sucesso."
     
 
 def consulta_existe(id_consulta):
-    guardar_paciente()
+    guardar_consulta1()
     return id_consulta in _consultas
