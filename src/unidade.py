@@ -74,7 +74,7 @@ def listar_unidades():
         return 404, "Nenhuma unidade registada."
 
     log_servidor(200, "Lista de unidades recuperada.")
-    return 200, {uid: dict(dados) for uid, dados in _unidades.items
+    return 200, {uid: dict(dados) for uid, dados in _unidades.items()}
 
 
 
