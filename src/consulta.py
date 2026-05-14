@@ -71,7 +71,7 @@ def criar_consulta(id_medico, id_paciente, data_hora, sintomas, observacoes=""):
     }
 
     log_servidor(201, f"Consulta '{id_consulta}' criada: medico={id_medico}, paciente NIF={id_paciente}.")
-     guardar_consulta1()
+    guardar_consulta1()
     return 201, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
 
 
@@ -104,7 +104,7 @@ def listar_consultas(filtro_medico=None, filtro_paciente=None, filtro_estado=Non
 
 
 def consultar_consulta(id_consulta):
-     carregar_consulta()
+    carregar_consulta()
     if id_consulta not in _consultas:
         log_servidor(404, f"Consulta '{id_consulta}' nao encontrada.")
         return 404, f"Consulta '{id_consulta}' nao encontrada."
@@ -146,13 +146,13 @@ def atualizar_consulta(id_consulta, data_hora=None, sintomas=None,
         consulta["estado"] = estado
 
     log_servidor(200, f"Consulta '{id_consulta}' atualizada.")
-     guardar_consulta1()
+    guardar_consulta1()
     return 200, dict(consulta) | {"id_consulta": id_consulta}
     
 
 
 def cancelar_consulta(id_consulta):
-     carregar_consulta()
+    carregar_consulta()
     if id_consulta not in _consultas:
         log_servidor(404, f"Consulta '{id_consulta}' nao encontrada.")
         return 404, f"Consulta '{id_consulta}' nao encontrada."
@@ -175,7 +175,7 @@ def remover_consulta(id_consulta):
         return 404, f"Consulta '{id_consulta}' nao encontrada."
     _consultas.pop(id_consulta)
     log_servidor(200, f"Consulta '{id_consulta}' removida.")
-     guardar_consulta1()
+    guardar_consulta1()
     return 200, f"Consulta '{id_consulta}' removida com sucesso."
     
 
