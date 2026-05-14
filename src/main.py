@@ -15,6 +15,7 @@ from consulta import (
     atualizar_consulta, cancelar_consulta, remover_consulta
 )
 
+
 # ─────────────────────────────────────────────
 #  MENUS (cabeçalhos)
 # ─────────────────────────────────────────────
@@ -30,6 +31,7 @@ def menu_principal():
     print("║  0 - Sair                            ║")
     print("╚══════════════════════════════════════╝")
 
+
 def menu_unidade():
     print("\n===== MENU UNIDADE DE SAÚDE =====")
     print("1 - Criar unidade")
@@ -38,6 +40,7 @@ def menu_unidade():
     print("4 - Atualizar unidade")
     print("5 - Remover unidade")
     print("0 - Voltar")
+
 
 def menu_medico():
     print("\n===== MENU MÉDICO =====")
@@ -48,6 +51,7 @@ def menu_medico():
     print("5 - Remover médico")
     print("0 - Voltar")
 
+
 def menu_paciente():
     print("\n===== MENU PACIENTE =====")
     print("1 - Criar paciente")
@@ -56,6 +60,7 @@ def menu_paciente():
     print("4 - Atualizar paciente")
     print("5 - Remover paciente")
     print("0 - Voltar")
+
 
 def menu_consulta():
     print("\n===== MENU CONSULTA =====")
@@ -66,6 +71,7 @@ def menu_consulta():
     print("5 - Cancelar consulta")
     print("6 - Remover consulta")
     print("0 - Voltar")
+
 
 # ─────────────────────────────────────────────
 #  SUBMENU UNIDADE
@@ -137,9 +143,9 @@ def submenu_unidade():
 
             code, obj = atualizar_unidade(
                 uid,
-                nome        if nome.strip() else None,
+                nome if nome.strip() else None,
                 localizacao if localizacao.strip() else None,
-                tipo        if tipo.strip() else None,
+                tipo if tipo.strip() else None,
                 capacidade,
             )
             if code == 200:
@@ -162,6 +168,7 @@ def submenu_unidade():
         else:
             print("\n❌ Opção inválida.")
 
+
 # ─────────────────────────────────────────────
 #  SUBMENU MÉDICO
 # ─────────────────────────────────────────────
@@ -172,17 +179,17 @@ def submenu_medico():
         opcao = input("Escolha uma opção: ").strip()
 
         if opcao == "1":
-            nome       = input("Nome: ")
-            dt_nasc    = input("Data de nascimento (YYYY-MM-DD): ")
-            nacional   = input("Nacionalidade: ")
-            especial   = input("Especialidade: ")
+            nome = input("Nome: ")
+            dt_nasc = input("Data de nascimento (YYYY-MM-DD): ")
+            nacional = input("Nacionalidade: ")
+            especial = input("Especialidade: ")
             dt_registo = input("Data de registo (YYYY-MM-DD): ")
-            idiomas    = input("Idiomas: ")
-            p_forte    = input("Ponto forte: ")
-            p_fraco    = input("Ponto fraco: ")
+            idiomas = input("Idiomas: ")
+            p_forte = input("Ponto forte: ")
+            p_fraco = input("Ponto fraco: ")
             id_unidade = input("ID da unidade de saúde (ex: U001): ")
-            horario    = input("Horário do turno: ")
-            cargo      = input("Cargo: ")
+            horario = input("Horário do turno: ")
+            cargo = input("Cargo: ")
 
             code, obj = criar_medico(nome, dt_nasc, nacional, especial,
                                      dt_registo, idiomas, p_forte, p_fraco,
@@ -214,32 +221,32 @@ def submenu_medico():
                 print(f"\n❌ {obj}")
 
         elif opcao == "4":
-            id_medico  = input("ID do médico: ").strip().upper()
-            nome       = input("Novo nome (enter para manter): ")
-            dt_nasc    = input("Nova data nascimento YYYY-MM-DD (enter para manter): ")
-            nacional   = input("Nova nacionalidade (enter para manter): ")
-            especial   = input("Nova especialidade (enter para manter): ")
+            id_medico = input("ID do médico: ").strip().upper()
+            nome = input("Novo nome (enter para manter): ")
+            dt_nasc = input("Nova data nascimento YYYY-MM-DD (enter para manter): ")
+            nacional = input("Nova nacionalidade (enter para manter): ")
+            especial = input("Nova especialidade (enter para manter): ")
             dt_registo = input("Nova data de registo YYYY-MM-DD (enter para manter): ")
-            idiomas    = input("Novos idiomas (enter para manter): ")
-            p_forte    = input("Novo ponto forte (enter para manter): ")
-            p_fraco    = input("Novo ponto fraco (enter para manter): ")
+            idiomas = input("Novos idiomas (enter para manter): ")
+            p_forte = input("Novo ponto forte (enter para manter): ")
+            p_fraco = input("Novo ponto fraco (enter para manter): ")
             id_unidade = input("Novo ID da unidade (enter para manter): ")
-            horario    = input("Novo horário do turno (enter para manter): ")
-            cargo      = input("Novo cargo (enter para manter): ")
+            horario = input("Novo horário do turno (enter para manter): ")
+            cargo = input("Novo cargo (enter para manter): ")
 
             code, obj = atualizar_medico(
                 id_medico,
-                nome       if nome.strip() else None,
-                dt_nasc    if dt_nasc.strip() else None,
-                nacional   if nacional.strip() else None,
-                especial   if especial.strip() else None,
+                nome if nome.strip() else None,
+                dt_nasc if dt_nasc.strip() else None,
+                nacional if nacional.strip() else None,
+                especial if especial.strip() else None,
                 dt_registo if dt_registo.strip() else None,
-                idiomas    if idiomas.strip() else None,
-                p_forte    if p_forte.strip() else None,
-                p_fraco    if p_fraco.strip() else None,
+                idiomas if idiomas.strip() else None,
+                p_forte if p_forte.strip() else None,
+                p_fraco if p_fraco.strip() else None,
                 id_unidade if id_unidade.strip() else None,
-                horario    if horario.strip() else None,
-                cargo      if cargo.strip() else None,
+                horario if horario.strip() else None,
+                cargo if cargo.strip() else None,
             )
             if code == 200:
                 print("\n✅ Médico atualizado:\n" + str(obj))
@@ -259,6 +266,7 @@ def submenu_medico():
         else:
             print("\n❌ Opção inválida.")
 
+
 # ─────────────────────────────────────────────
 #  SUBMENU PACIENTE
 # ─────────────────────────────────────────────
@@ -269,12 +277,12 @@ def submenu_paciente():
         opcao = input("Escolha uma opção: ").strip()
 
         if opcao == "1":
-            nome      = input("Nome: ")
-            dt_nasc   = input("Data de nascimento (YYYY-MM-DD): ")
-            nacional  = input("Nacionalidade: ")
+            nome = input("Nome: ")
+            dt_nasc = input("Data de nascimento (YYYY-MM-DD): ")
+            nacional = input("Nacionalidade: ")
             tipo_sang = input("Tipo sanguíneo: ")
-            alergias  = input("Alergias: ")
-            doencas   = input("Doenças crónicas: ")
+            alergias = input("Alergias: ")
+            doencas = input("Doenças crónicas: ")
             cirurgias = input("Cirurgias anteriores: ")
 
             id_medico_str = input("ID do médico responsável (ex: M001): ").strip().upper()
@@ -320,12 +328,12 @@ def submenu_paciente():
                 print("\n❌ Erro: NIF deve ser numérico.")
                 continue
 
-            nome      = input("Novo nome (enter para manter): ")
-            dt_nasc   = input("Nova data nascimento YYYY-MM-DD (enter para manter): ")
-            nacional  = input("Nova nacionalidade (enter para manter): ")
+            nome = input("Novo nome (enter para manter): ")
+            dt_nasc = input("Nova data nascimento YYYY-MM-DD (enter para manter): ")
+            nacional = input("Nova nacionalidade (enter para manter): ")
             tipo_sang = input("Novo tipo sanguíneo (enter para manter): ")
-            alergias  = input("Novas alergias (enter para manter): ")
-            doencas   = input("Novas doenças crónicas (enter para manter): ")
+            alergias = input("Novas alergias (enter para manter): ")
+            doencas = input("Novas doenças crónicas (enter para manter): ")
             cirurgias = input("Novas cirurgias anteriores (enter para manter): ")
             id_medico = input("Novo ID do médico (enter para manter): ")
 
@@ -333,15 +341,14 @@ def submenu_paciente():
                 print(f"\n❌ Erro: Médico '{id_medico.strip()}' não encontrado.")
                 continue
 
-         
             code, obj = atualizar_paciente(
                 nif,
-                nome      if nome.strip() else None,
-                dt_nasc   if dt_nasc.strip() else None,
-                nacional  if nacional.strip() else None,
+                nome if nome.strip() else None,
+                dt_nasc if dt_nasc.strip() else None,
+                nacional if nacional.strip() else None,
                 tipo_sang if tipo_sang.strip() else None,
-                alergias  if alergias.strip() else None,
-                doencas   if doencas.strip() else None,
+                alergias if alergias.strip() else None,
+                doencas if doencas.strip() else None,
                 cirurgias if cirurgias.strip() else None,
                 id_medico if id_medico.strip() else None,
             )
@@ -366,6 +373,7 @@ def submenu_paciente():
             break
         else:
             print("\n❌ Opção inválida.")
+
 
 # ─────────────────────────────────────────────
 #  SUBMENU CONSULTA
@@ -392,8 +400,8 @@ def submenu_consulta():
                 continue
 
             data_hora = input("Data e hora (YYYY-MM-DD HH:MM): ")
-            sintomas  = input("Sintomas: ")
-            observ    = input("Observações clínicas (opcional): ")
+            sintomas = input("Sintomas: ")
+            observ = input("Observações clínicas (opcional): ")
 
             code, obj = criar_consulta(id_medico, nif, data_hora, sintomas, observ)
             if code == 201:
@@ -405,9 +413,9 @@ def submenu_consulta():
 
         elif opcao == "2":
             print("\nFiltros (deixe em branco para listar todas):")
-            f_medico  = input("  Filtrar por ID médico: ").strip().upper() or None
+            f_medico = input("  Filtrar por ID médico: ").strip().upper() or None
             f_pac_str = input("  Filtrar por NIF paciente: ").strip()
-            f_estado  = input(f"  Filtrar por estado {ESTADOS} (enter para todos): ").strip() or None
+            f_estado = input(f"  Filtrar por estado {ESTADOS} (enter para todos): ").strip() or None
 
             f_paciente = None
             if f_pac_str:
@@ -437,19 +445,19 @@ def submenu_consulta():
                 print(f"\n❌ {obj}")
 
         elif opcao == "4":
-            cid       = input("ID da consulta: ").strip().upper()
+            cid = input("ID da consulta: ").strip().upper()
             data_hora = input("Nova data/hora YYYY-MM-DD HH:MM (enter para manter): ")
-            sintomas  = input("Novos sintomas (enter para manter): ")
-            observ    = input("Novas observações (enter para manter): ")
+            sintomas = input("Novos sintomas (enter para manter): ")
+            observ = input("Novas observações (enter para manter): ")
             print(f"Estados válidos: {', '.join(ESTADOS)}")
-            estado    = input("Novo estado (enter para manter): ")
+            estado = input("Novo estado (enter para manter): ")
 
             code, obj = atualizar_consulta(
                 cid,
                 data_hora if data_hora.strip() else None,
-                sintomas  if sintomas.strip() else None,
-                observ    if observ.strip() else None,
-                estado    if estado.strip() else None,
+                sintomas if sintomas.strip() else None,
+                observ if observ.strip() else None,
+                estado if estado.strip() else None,
             )
             if code == 200:
                 print("\n✅ Consulta atualizada:")
@@ -479,6 +487,7 @@ def submenu_consulta():
         else:
             print("\n❌ Opção inválida.")
 
+
 # ─────────────────────────────────────────────
 #  MAIN
 # ─────────────────────────────────────────────
@@ -501,6 +510,7 @@ def main():
             break
         else:
             print("\n❌ Opção inválida.")
+
 
 if __name__ == "__main__":
     main()
