@@ -6,9 +6,11 @@ import os
 _unidades = {}
 _contador_unidades = 1
 unidade_ficheiro = "unidade_ficheiro.json"
+
 def guardar_unidade1():
     with open(unidade_ficheiro,"w", encoding="utf-8") as unidade:
         json.dump(_unidades, unidade, indent=4, ensure_ascii=False)
+
 def carregar_unidade():
     global _unidades
     if os.path.exists(unidade_ficheiro):
@@ -16,6 +18,7 @@ def carregar_unidade():
             _unidades = json.load(unidade)
     else:
         _unidades = {}
+
 def _gerar_id_unidade():
     global _contador_unidades
     novo_id = f"U{_contador_unidades:03d}"
@@ -64,8 +67,6 @@ def criar_unidade(nome, localizacao, tipo, capacidade_maxima):
     log_servidor(201, f"Unidade '{nome}' criada com ID: {id_unidade}")
     guardar_unidade1()
     return 201, dict(_unidades[id_unidade]) | {"id_unidade": id_unidade}
-   
-
 
 def listar_unidades():
     carregar_unidade()
@@ -76,8 +77,6 @@ def listar_unidades():
     log_servidor(200, "Lista de unidades recuperada.")
     return 200, {uid: dict(dados) for uid, dados in _unidades.items()}
 
-
-
 def consultar_unidade(id_unidade):
     carregar_unidade()
     if id_unidade not in _unidades:
@@ -85,9 +84,7 @@ def consultar_unidade(id_unidade):
         return 404, f"Unidade '{id_unidade}' nao encontrada."
 
     log_servidor(200, f"Unidade '{id_unidade}' encontrada.")
-    carregar_unidade()
     return 200, dict(_unidades[id_unidade]) | {"id_unidade": id_unidade}
- 
 
 
 def atualizar_unidade(id_unidade, nome=None, localizacao=None, tipo=None, capacidade_maxima=None):
@@ -129,8 +126,6 @@ def atualizar_unidade(id_unidade, nome=None, localizacao=None, tipo=None, capaci
     guardar_unidade1()
     return 200, dict(unidade) | {"id_unidade": id_unidade}
 
-
-
 def remover_unidade(id_unidade):
     carregar_unidade()
     if id_unidade not in _unidades:
@@ -149,14 +144,10 @@ def remover_unidade(id_unidade):
     guardar_unidade1()
     return 200, nome
  
-
-
 def unidade_existe(id_unidade):
     carregar_unidade()
     return id_unidade in _unidades
   
-
-
 def verificar_capacidade(id_unidade):
     """
     Verifica se a unidade pode receber mais um médico.

@@ -180,5 +180,5 @@ def remover_consulta(id_consulta):
     
 
 def consulta_existe(id_consulta):
-    guardar_consulta1()
+    carregar_consulta()
     return id_consulta in _consultas

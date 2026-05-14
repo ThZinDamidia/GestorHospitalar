@@ -1,8 +1,10 @@
 from ultils import gerar_nif_valido, validar_data, log_servidor
 import json
 import os
+
 _pacientes = {}
 paciente_ficheiro = "paciente_ficheiro.json"
+
 def guardar_paciente1():
     with open(paciente_ficheiro,"w", encoding="utf-8") as paciente:
         json.dump(_pacientes, paciente, indent=4, ensure_ascii=False)
