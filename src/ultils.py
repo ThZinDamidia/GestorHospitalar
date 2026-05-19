@@ -1,5 +1,20 @@
 from datetime import datetime
 import random
+import logging
+import os
+
+LOG_DIR ='logs'
+os.makedirs(LOG_DIR, exist_ok=True)
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s | %(levelname)-8s | %(message)s',
+    handlers=[
+        logging.FileHandler(
+            f'{LOG_DIR}/gesrtor.log'),
+    ]
+)
+logger = logging.getLogger('gestor')
 
 _contador_ids = 1
 
