@@ -3,15 +3,14 @@ import random
 import logging
 import os
 
-LOG_DIR ='logs'
+LOG_DIR = 'logs'
 os.makedirs(LOG_DIR, exist_ok=True)
 
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s | %(levelname)-8s | %(message)s',
     handlers=[
-        logging.FileHandler(
-            f'{LOG_DIR}/gesrtor.log'),
+        logging.FileHandler(f'{LOG_DIR}/gestor.log'),
     ]
 )
 logger = logging.getLogger('gestor')
@@ -45,3 +44,9 @@ def validar_data(data_texto):
 
 def log_servidor(status, mensagem):
     print(f"\n[HTTP {status}] : {mensagem}")
+    if status >= 500:
+        logger.error("[HTTP %d] %s", status, mensagem)
+    elif status >= 400:
+        logger.warning("[HTTP %d] %s", status, mensagem)
+    else:
+        logger.info("[HTTP %d] %s", status, mensagem)
