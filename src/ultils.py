@@ -1,5 +1,20 @@
 from datetime import datetime
 import random
+import logging
+import os
+
+LOG_DIR = 'logs'
+os.makedirs(LOG_DIR, exist_ok=True)
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s | %(levelname)-8s | %(message)s',
+    handlers=[
+        logging.FileHandler(f'{LOG_DIR}/gestor.log'),
+    ]
+)
+
+logger = logging.getLogger('gestor')
 
 _contador_ids = 1
 
@@ -27,6 +42,3 @@ def validar_data(data_texto):
         return True
     except ValueError:
         return False
-
-def log_servidor(status, mensagem):
-    print(f"\n[HTTP {status}] : {mensagem}")
