@@ -1,4 +1,3 @@
-from ultils import log_servidor
 import json
 import os
 import logging
@@ -42,16 +41,16 @@ def criar_unidade(nome, localizacao, tipo, capacidade_maxima):
     logger.info("Tentativa de criacao de unidade.")
     carregar_unidade()
     if not nome or not nome.strip():
-        log_servidor(400, "Nome da unidade nao pode estar vazio.")
+        logger.error("Nome da unidade nao pode estar vazio.")
         return 400, "Nome da unidade nao pode estar vazio."
 
     if not localizacao or not localizacao.strip():
-        log_servidor(400, "Localizacao nao pode estar vazia.")
+        logger.error("Localizacao nao pode estar vazia.")
         return 400, "Localizacao nao pode estar vazia."
 
     tipos_validos = ["Hospital Regional", "Centro de Saude", "Clinica"]
     if tipo not in tipos_validos:
-        log_servidor(400, f"Tipo invalido. Opcoes: {tipos_validos}")
+        logger.error("Tipo invalido: %s.", tipo)
         return 400, f"Tipo invalido. Use: {', '.join(tipos_validos)}"
 
     try:
@@ -59,7 +58,7 @@ def criar_unidade(nome, localizacao, tipo, capacidade_maxima):
         if capacidade_maxima <= 0:
             raise ValueError
     except (ValueError, TypeError):
-        log_servidor(400, "Capacidade maxima deve ser um inteiro positivo.")
+        logger.error("Capacidade maxima deve ser um inteiro positivo.")
         return 400, "Capacidade maxima invalida."
 
     id_unidade = _gerar_id_unidade()
@@ -72,7 +71,6 @@ def criar_unidade(nome, localizacao, tipo, capacidade_maxima):
         "medicos_vinculados": 0,
     }
 
-    log_servidor(201, f"Unidade '{nome}' criada com ID: {id_unidade}")
     logger.info("Unidade criada com sucesso: ID='%s'.", id_unidade)
     guardar_unidade1()
     return 201, dict(_unidades[id_unidade]) | {"id_unidade": id_unidade}
@@ -81,10 +79,9 @@ def listar_unidades():
     logger.info("Pedido de listagem de unidades.")
     carregar_unidade()
     if not _unidades:
-        log_servidor(404, "Nenhuma unidade registada.")
+        logger.error("Nenhuma unidade registada.")
         return 404, "Nenhuma unidade registada."
 
-    log_servidor(200, "Lista de unidades recuperada.")
     logger.info("Listagem concluida: %d unidade(s).", len(_unidades))
     return 200, {uid: dict(dados) for uid, dados in _unidades.items()}
 
@@ -92,11 +89,9 @@ def consultar_unidade(id_unidade):
     logger.info("Pedido de consulta da unidade ID='%s'.", id_unidade)
     carregar_unidade()
     if id_unidade not in _unidades:
-        log_servidor(404, f"Unidade '{id_unidade}' nao encontrada.")
-        logger.warning("Unidade ID='%s' nao encontrada.", id_unidade)
+        logger.error("Unidade ID='%s' nao encontrada.", id_unidade)
         return 404, f"Unidade '{id_unidade}' nao encontrada."
 
-    log_servidor(200, f"Unidade '{id_unidade}' encontrada.")
     logger.info("Unidade ID='%s' retornada.", id_unidade)
     return 200, dict(_unidades[id_unidade]) | {"id_unidade": id_unidade}
 
@@ -105,8 +100,7 @@ def atualizar_unidade(id_unidade, nome=None, localizacao=None, tipo=None, capaci
     logger.info("Pedido de atualizacao da unidade ID='%s'.", id_unidade)
     carregar_unidade()
     if id_unidade not in _unidades:
-        log_servidor(404, f"Unidade '{id_unidade}' nao encontrada.")
-        logger.warning("Atualizacao falhada: unidade ID='%s' nao encontrada.", id_unidade)
+        logger.error("Atualizacao falhada: unidade ID='%s' nao encontrada.", id_unidade)
         return 404, f"Unidade '{id_unidade}' nao encontrada."
 
     unidade = _unidades[id_unidade]
@@ -120,8 +114,7 @@ def atualizar_unidade(id_unidade, nome=None, localizacao=None, tipo=None, capaci
     if tipo is not None:
         tipos_validos = ["Hospital Regional", "Centro de Saude", "Clinica"]
         if tipo not in tipos_validos:
-            log_servidor(400, f"Tipo invalido: {tipo}")
-            logger.warning("Tipo invalido na atualizacao da unidade ID='%s'.", id_unidade)
+            logger.error("Tipo invalido na atualizacao da unidade ID='%s'.", id_unidade)
             return 400, f"Tipo invalido. Use: {', '.join(tipos_validos)}"
         unidade["tipo"] = tipo
 
@@ -129,20 +122,17 @@ def atualizar_unidade(id_unidade, nome=None, localizacao=None, tipo=None, capaci
         try:
             nova_cap = int(capacidade_maxima)
             if nova_cap < unidade["medicos_vinculados"]:
-                log_servidor(400, "Nova capacidade inferior ao numero de medicos ja vinculados.")
-                logger.warning("Atualizacao rejeitada: nova capacidade abaixo dos medicos vinculados "
-                               "na unidade ID='%s'.", id_unidade)
+                logger.error("Atualizacao rejeitada: nova capacidade abaixo dos medicos vinculados "
+                              "na unidade ID='%s'.", id_unidade)
                 return 400, (
                     f"Capacidade invalida: a unidade ja tem {unidade['medicos_vinculados']} "
                     f"medicos vinculados."
                 )
             unidade["capacidade_maxima"] = nova_cap
         except (ValueError, TypeError):
-            log_servidor(400, "Capacidade invalida.")
-            logger.warning("Valor de capacidade invalido na unidade ID='%s'.", id_unidade)
+            logger.error("Valor de capacidade invalido na unidade ID='%s'.", id_unidade)
             return 400, "Capacidade maxima invalida."
 
-    log_servidor(200, f"Unidade '{id_unidade}' atualizada.")
     logger.info("Unidade ID='%s' atualizada com sucesso.", id_unidade)
     guardar_unidade1()
     return 200, dict(unidade) | {"id_unidade": id_unidade}
@@ -151,20 +141,17 @@ def remover_unidade(id_unidade):
     logger.info("Pedido de remocao da unidade ID='%s'.", id_unidade)
     carregar_unidade()
     if id_unidade not in _unidades:
-        log_servidor(404, f"Unidade '{id_unidade}' nao encontrada.")
-        logger.warning("Remocao falhada: unidade ID='%s' nao encontrada.", id_unidade)
+        logger.error("Remocao falhada: unidade ID='%s' nao encontrada.", id_unidade)
         return 404, f"Unidade '{id_unidade}' nao encontrada."
 
     if _unidades[id_unidade]["medicos_vinculados"] > 0:
-        log_servidor(409, f"Unidade '{id_unidade}' tem medicos vinculados.")
-        logger.warning("Remocao bloqueada: unidade ID='%s' ainda tem medicos vinculados.", id_unidade)
+        logger.error("Remocao bloqueada: unidade ID='%s' ainda tem medicos vinculados.", id_unidade)
         return 409, (
             f"Nao e possivel remover: a unidade ainda tem "
             f"{_unidades[id_unidade]['medicos_vinculados']} medico(s) vinculado(s)."
         )
 
     nome = _unidades.pop(id_unidade)["nome"]
-    log_servidor(200, f"Unidade '{nome}' removida.")
     logger.info("Unidade ID='%s' removida com sucesso.", id_unidade)
     guardar_unidade1()
     return 200, nome
@@ -181,7 +168,7 @@ def verificar_capacidade(id_unidade):
     """
     carregar_unidade()
     if id_unidade not in _unidades:
-        logger.warning("Verificacao de capacidade: unidade ID='%s' nao encontrada.", id_unidade)
+        logger.error("Verificacao de capacidade: unidade ID='%s' nao encontrada.", id_unidade)
         return False
     u = _unidades[id_unidade]
     tem_vaga = u["medicos_vinculados"] < u["capacidade_maxima"]
