@@ -9,20 +9,20 @@ logger = logging.getLogger('gestor')
 consultas_ficheiro = "consultas.json"
 
 def guardar_consulta1():
-    logger.debug("A guardar consultas no ficheiro '%s'.", consultas_ficheiro)
+    logger.debug("A guardar ficheiro de consultas.")
     with open(consultas_ficheiro, "w", encoding="utf-8") as consutas:
         json.dump(_consultas, consultas, indent=4, ensure_ascii=False)
-    logger.debug("Consultas guardadas com sucesso.")
+    logger.debug("Ficheiro de consultas guardado.")
 
 def carregar_consulta():
     global _consultas
     if os.path.exists(consultas_ficheiro):
-        logger.debug("A carregar consultas do ficheiro '%s'.", consultas_ficheiro)
+        logger.debug("A carregar ficheiro de consultas.")
         with open(consultas_ficheiro, "r") as consultas:
             _consultas = json.load(consultas)
-        logger.debug("Consultas carregadas: %d registo(s).", len(_consultas))
+        logger.debug("Ficheiro de consultas carregado: %d registo(s).", len(_consultas))
     else:
-        logger.debug("Ficheiro '%s' nao encontrado. A iniciar dicionario vazio.", consultas_ficheiro)
+        logger.debug("Ficheiro de consultas inexistente. A iniciar vazio.")
         consultas = {}
 
 _consultas = {}
@@ -33,7 +33,6 @@ def _gerar_id_consulta():
     global _contador_consultas
     novo_id = f"C{_contador_consultas:03d}"
     _contador_consultas += 1
-    logger.debug("ID de consulta gerado: %s", novo_id)
     return novo_id
 
 
@@ -53,8 +52,7 @@ def criar_consulta(id_medico, id_paciente, data_hora, sintomas, observacoes=""):
     Cria uma nova consulta.
     data_hora: formato 'YYYY-MM-DD HH:MM'
     """
-    logger.info("Tentativa de criacao de consulta: medico='%s', paciente NIF=%s, data_hora='%s'.",
-                id_medico, id_paciente, data_hora)
+    logger.info("Tentativa de criacao de consulta: medico='%s'.", id_medico)
     carregar_consulta()
     if not id_medico or not id_medico.strip():
         log_servidor(400, "ID do medico nao pode estar vazio.")
@@ -84,8 +82,7 @@ def criar_consulta(id_medico, id_paciente, data_hora, sintomas, observacoes=""):
     }
 
     log_servidor(201, f"Consulta '{id_consulta}' criada: medico={id_medico}, paciente NIF={id_paciente}.")
-    logger.info("Consulta criada com sucesso: ID='%s', medico='%s', paciente NIF=%s.",
-                id_consulta, id_medico, id_paciente)
+    logger.info("Consulta criada com sucesso: ID='%s', medico='%s'.", id_consulta, id_medico)
     guardar_consulta1()
     return 201, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
 
@@ -94,8 +91,7 @@ def listar_consultas(filtro_medico=None, filtro_paciente=None, filtro_estado=Non
     """
     Lista consultas com filtros opcionais por médico, paciente (NIF) ou estado.
     """
-    logger.info("Pedido de listagem de consultas. Filtros: medico='%s', paciente='%s', estado='%s'.",
-                filtro_medico, filtro_paciente, filtro_estado)
+    logger.info("Pedido de listagem de consultas.")
     carregar_consulta()
     if not _consultas:
         log_servidor(404, "Nenhuma consulta registada.")
@@ -113,16 +109,16 @@ def listar_consultas(filtro_medico=None, filtro_paciente=None, filtro_estado=Non
 
     if not resultado:
         log_servidor(404, "Nenhuma consulta corresponde aos filtros.")
-        logger.warning("Listagem sem resultados para os filtros fornecidos.")
+        logger.warning("Listagem sem resultados para os filtros aplicados.")
         return 404, "Nenhuma consulta encontrada com os filtros fornecidos."
 
     log_servidor(200, f"{len(resultado)} consulta(s) recuperada(s).")
-    logger.info("Listagem de consultas concluida: %d resultado(s).", len(resultado))
+    logger.info("Listagem concluida: %d consulta(s).", len(resultado))
     return 200, resultado
 
 
 def consultar_consulta(id_consulta):
-    logger.info("Pedido de consulta ID='%s'.", id_consulta)
+    logger.info("Pedido de detalhe da consulta ID='%s'.", id_consulta)
     carregar_consulta()
     if id_consulta not in _consultas:
         log_servidor(404, f"Consulta '{id_consulta}' nao encontrada.")
@@ -130,7 +126,7 @@ def consultar_consulta(id_consulta):
         return 404, f"Consulta '{id_consulta}' nao encontrada."
 
     log_servidor(200, f"Consulta '{id_consulta}' encontrada.")
-    logger.info("Consulta ID='%s' encontrada e retornada.", id_consulta)
+    logger.info("Consulta ID='%s' retornada.", id_consulta)
     return 200, dict(_consultas[id_consulta]) | {"id_consulta": id_consulta}
 
 
@@ -147,7 +143,7 @@ def atualizar_consulta(id_consulta, data_hora=None, sintomas=None,
 
     if consulta["estado"] == "Cancelada":
         log_servidor(409, f"Consulta '{id_consulta}' esta cancelada e nao pode ser editada.")
-        logger.warning("Atualizacao bloqueada: consulta ID='%s' esta cancelada.", id_consulta)
+        logger.warning("Atualizacao bloqueada: consulta ID='%s' ja cancelada.", id_consulta)
         return 409, "Nao e possivel editar uma consulta cancelada."
 
     if data_hora is not None:
@@ -155,26 +151,21 @@ def atualizar_consulta(id_consulta, data_hora=None, sintomas=None,
             log_servidor(400, "Data/hora invalida.")
             logger.warning("Data/hora invalida na atualizacao da consulta ID='%s'.", id_consulta)
             return 400, "Data/hora invalida. Use o formato YYYY-MM-DD HH:MM."
-        logger.debug("Consulta ID='%s': data_hora alterada para '%s'.", id_consulta, data_hora)
         consulta["data_hora"] = data_hora.strip()
 
     if sintomas is not None and sintomas.strip():
-        logger.debug("Consulta ID='%s': sintomas atualizados.", id_consulta)
         consulta["sintomas"] = sintomas.strip()
 
     if observacoes is not None:
-        logger.debug("Consulta ID='%s': observacoes atualizadas.", id_consulta)
         consulta["observacoes"] = observacoes.strip()
 
     if estado is not None:
         estados_validos = ["Agendada", "Realizada", "Cancelada"]
         if estado not in estados_validos:
             log_servidor(400, f"Estado invalido. Opcoes: {estados_validos}")
-            logger.warning("Estado invalido '%s' na atualizacao da consulta ID='%s'.",
-                           estado, id_consulta)
+            logger.warning("Estado invalido na atualizacao da consulta ID='%s'.", id_consulta)
             return 400, f"Estado invalido. Use: {', '.join(estados_validos)}"
-        logger.debug("Consulta ID='%s': estado alterado de '%s' para '%s'.",
-                     id_consulta, consulta["estado"], estado)
+        logger.info("Consulta ID='%s': estado alterado para '%s'.", id_consulta, estado)
         consulta["estado"] = estado
 
     log_servidor(200, f"Consulta '{id_consulta}' atualizada.")
@@ -219,6 +210,5 @@ def remover_consulta(id_consulta):
 
 def consulta_existe(id_consulta):
     carregar_consulta()
-    existe = id_consulta in _consultas
-    logger.debug("Verificacao de existencia da consulta ID='%s': %s.", id_consulta, existe)
-    return existe
+    logger.debug("Verificacao de existencia: consulta ID='%s'.", id_consulta)
+    return id_consulta in _consultas
