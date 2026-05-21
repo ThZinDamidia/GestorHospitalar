@@ -13,6 +13,7 @@ logging.basicConfig(
         logging.FileHandler(f'{LOG_DIR}/gestor.log'),
     ]
 )
+
 logger = logging.getLogger('gestor')
 
 _contador_ids = 1
@@ -41,12 +42,3 @@ def validar_data(data_texto):
         return True
     except ValueError:
         return False
-
-def log_servidor(status, mensagem):
-    print(f"\n[HTTP {status}] : {mensagem}")
-    if status >= 500:
-        logger.error("[HTTP %d] %s", status, mensagem)
-    elif status >= 400:
-        logger.warning("[HTTP %d] %s", status, mensagem)
-    else:
-        logger.info("[HTTP %d] %s", status, mensagem)
